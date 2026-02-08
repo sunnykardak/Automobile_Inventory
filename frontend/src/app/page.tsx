@@ -1,12 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,21 +16,9 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-        formData
-      );
-
-      if (response.data.success) {
-        // Store token
-        localStorage.setItem('token', response.data.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.data.user));
-        
-        toast.success('Login successful!');
-        router.push('/dashboard');
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed');
+      await login(formData.email, formData.password);
+    } catch (error) {
+      // Error handled by AuthContext
     } finally {
       setLoading(false);
     }

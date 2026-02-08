@@ -3,7 +3,16 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiPackage, FiSearch, FiFilter, FiAlertCircle, FiBarcode2 } from 'react-icons/fi';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  Plus, 
+  Edit2, 
+  Package, 
+  Search, 
+  Filter, 
+  AlertCircle, 
+  Barcode 
+} from 'lucide-react';
 
 interface InventoryItem {
   id: number;
@@ -34,6 +43,7 @@ interface Manufacturer {
 }
 
 export default function InventoryPage() {
+  const { token } = useAuth();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
@@ -76,7 +86,6 @@ export default function InventoryPage() {
   }, [searchTerm, selectedCategory, showLowStock]);
 
   const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
     return { Authorization: `Bearer ${token}` };
   };
 
@@ -276,7 +285,7 @@ export default function InventoryPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
-            <FiSearch className="absolute left-3 top-3 text-gray-400" />
+            <Search className="absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
               placeholder="Search by name, barcode, brand..."
@@ -288,7 +297,7 @@ export default function InventoryPage() {
 
           {/* Category Filter */}
           <div className="relative">
-            <FiFilter className="absolute left-3 top-3 text-gray-400" />
+            <Filter className="absolute left-3 top-3 text-gray-400" />
             <select
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
               value={selectedCategory}
@@ -322,7 +331,7 @@ export default function InventoryPage() {
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <FiPlus /> Add Item
+              <Plus /> Add Item
             </button>
           </div>
         </div>
@@ -337,7 +346,7 @@ export default function InventoryPage() {
           </div>
         ) : inventory.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            <FiPackage className="mx-auto text-5xl mb-4" />
+            <Package className="mx-auto text-5xl mb-4" />
             <p>No inventory items found</p>
           </div>
         ) : (
@@ -367,7 +376,7 @@ export default function InventoryPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1 text-sm text-gray-900">
-                        <FiBarcode2 className="text-gray-400" />
+                        <Barcode className="text-gray-400" />
                         {item.barcode}
                       </div>
                     </td>
@@ -395,14 +404,14 @@ export default function InventoryPage() {
                           className="text-blue-600 hover:text-blue-800"
                           title="Edit"
                         >
-                          <FiEdit2 />
+                          <Edit2 />
                         </button>
                         <button
                           onClick={() => openRestockModal(item)}
                           className="text-green-600 hover:text-green-800"
                           title="Restock"
                         >
-                          <FiPackage />
+                          <Package />
                         </button>
                       </div>
                     </td>

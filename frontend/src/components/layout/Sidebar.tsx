@@ -3,15 +3,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  FiHome,
-  FiClipboard,
-  FiPackage,
-  FiUsers,
-  FiBarChart2,
-  FiUser,
-  FiHelpCircle,
-  FiX,
-} from 'react-icons/fi';
+  Home,
+  Clipboard,
+  Package,
+  Users,
+  BarChart2,
+  User,
+  HelpCircle,
+  X,
+} from 'lucide-react';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -19,13 +19,13 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: FiHome },
-  { name: 'Tasks / Jobs', href: '/dashboard/jobs', icon: FiClipboard },
-  { name: 'Inventory', href: '/dashboard/inventory', icon: FiPackage },
-  { name: 'Employees', href: '/dashboard/employees', icon: FiUsers },
-  { name: 'Reports', href: '/dashboard/reports', icon: FiBarChart2 },
-  { name: 'My Account', href: '/dashboard/account', icon: FiUser },
-  { name: 'Help & Support', href: '/dashboard/help', icon: FiHelpCircle },
+  { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Tasks / Jobs', href: '/dashboard/jobs', icon: Clipboard },
+  { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
+  { name: 'Employees', href: '/dashboard/employees', icon: Users },
+  { name: 'Reports', href: '/dashboard/reports', icon: BarChart2 },
+  { name: 'My Account', href: '/dashboard/account', icon: User },
+  { name: 'Help & Support', href: '/dashboard/help', icon: HelpCircle },
 ];
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
@@ -62,7 +62,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             className="lg:hidden text-gray-400 hover:text-white"
             onClick={() => setSidebarOpen(false)}
           >
-            <FiX size={24} />
+            <X size={24} />
           </button>
         </div>
 

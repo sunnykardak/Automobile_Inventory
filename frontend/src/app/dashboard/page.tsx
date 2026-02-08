@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import {
-  FiClipboard,
-  FiCheckCircle,
-  FiAlertTriangle,
-  FiDollarSign,
-  FiTrendingUp,
-} from 'react-icons/fi';
+import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import {
+  Clipboard,
+  CheckCircle,
+  AlertTriangle,
+  DollarSign,
+  TrendingUp,
+} from 'lucide-react';
 
 interface DashboardData {
   overview: {
@@ -29,22 +30,21 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { token, isAuthenticated } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!isAuthenticated) {
       router.push('/');
       return;
     }
 
     fetchDashboardData();
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/dashboard`,
         {
@@ -89,37 +89,37 @@ export default function DashboardPage() {
     {
       title: 'Total Jobs Today',
       value: overview.totalJobsToday,
-      icon: FiClipboard,
+      icon: Clipboard,
       color: 'blue',
     },
     {
       title: 'Pending Jobs',
       value: overview.pendingJobs,
-      icon: FiAlertTriangle,
+      icon: AlertTriangle,
       color: 'yellow',
     },
     {
       title: 'Completed Today',
       value: overview.completedJobsToday,
-      icon: FiCheckCircle,
+      icon: CheckCircle,
       color: 'green',
     },
     {
       title: "Today's Revenue",
       value: `₹${overview.todayRevenue.toLocaleString()}`,
-      icon: FiDollarSign,
+      icon: DollarSign,
       color: 'indigo',
     },
     {
       title: 'Monthly Revenue',
       value: `₹${overview.monthlyRevenue.toLocaleString()}`,
-      icon: FiTrendingUp,
+      icon: TrendingUp,
       color: 'purple',
     },
     {
       title: 'Low Stock Alerts',
       value: overview.lowStockItems,
-      icon: FiAlertTriangle,
+      icon: AlertTriangle,
       color: 'red',
     },
   ];
