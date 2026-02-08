@@ -9,6 +9,7 @@ DB_USER="nishikesh"
 DB_PASSWORD="admin123"
 DB_HOST="localhost"
 DB_PORT="5432"
+PG_SUPERUSER="${USER}"  # Use current system user as PostgreSQL superuser
 
 echo "========================================="
 echo "Automobile Inventory Database Setup"
@@ -45,17 +46,17 @@ echo ""
 
 # Create database user if not exists
 echo "Creating database user '$DB_USER'..."
-psql -h $DB_HOST -U postgres -tc "SELECT 1 FROM pg_user WHERE usename = '$DB_USER'" | grep -q 1 || \
-psql -h $DB_HOST -U postgres -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
+psql -h $DB_HOST -U $PG_SUPERUSER -d postgres -tc "SELECT 1 FROM pg_user WHERE usename = '$DB_USER'" | grep -q 1 || \
+psql -h $DB_HOST -U $PG_SUPERUSER -d postgres -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
 
 # Create database if not exists
 echo "Creating database '$DB_NAME'..."
-psql -h $DB_HOST -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'" | grep -q 1 || \
-psql -h $DB_HOST -U postgres -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+psql -h $DB_HOST -U $PG_SUPERUSER -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'" | grep -q 1 || \
+psql -h $DB_HOST -U $PG_SUPERUSER -d postgres -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 
 # Grant privileges
 echo "Granting privileges..."
-psql -h $DB_HOST -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
+psql -h $DB_HOST -U $PG_SUPERUSER -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
 
 echo ""
 echo "✅ Database and user created successfully"

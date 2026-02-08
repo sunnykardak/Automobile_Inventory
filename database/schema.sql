@@ -465,7 +465,7 @@ INSERT INTO roles (name, description, permissions) VALUES
 -- Insert default admin user (password: admin123)
 -- Note: In production, use proper password hashing
 INSERT INTO users (username, email, password_hash, role_id) VALUES
-('admin', 'admin@garage.com', '$2b$10$rKvqZJhQXm5jvP8Y7qG7yOqK7iB5kqVR8jGKqP3JqK7kQP8qG7yOq', 1);
+('admin', 'admin@garage.com', '$2a$10$DBIorpICgELWSJm3Tfdz7OMXAX/2LXgptJu8gFzdxv89luJGMiHDG', 1);
 
 -- Insert sample manufacturers
 INSERT INTO manufacturers (name, country) VALUES
