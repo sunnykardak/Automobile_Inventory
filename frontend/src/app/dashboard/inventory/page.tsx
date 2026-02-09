@@ -42,11 +42,38 @@ interface Manufacturer {
   name: string;
 }
 
+interface ProductMaster {
+  id: number;
+  manufacturer_id: number;
+  category_id: number;
+  name: string;
+  part_number: string;
+  description: string;
+  specifications: any;
+  unit_price: number;
+  manufacturer_name: string;
+  category_name: string;
+}
+
+interface VehicleModel {
+  id: number;
+  manufacturer_id: number;
+  model_name: string;
+  model_year_start: number;
+  vehicle_type: string;
+  engine_capacity: string;
+  manufacturer_name: string;
+}
+
 export default function InventoryPage() {
   const { token } = useAuth();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
+  const [productMaster, setProductMaster] = useState<ProductMaster[]>([]);
+  const [vehicleModels, setVehicleModels] = useState<VehicleModel[]>([]);
+  const [filteredModels, setFilteredModels] = useState<VehicleModel[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ProductMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -58,6 +85,9 @@ export default function InventoryPage() {
   
   const [formData, setFormData] = useState({
     productMasterId: '',
+    selectedManufacturer: '',
+    selectedModel: '',
+    selectedProduct: '',
     brand: '',
     barcode: '',
     currentQuantity: 0,
@@ -80,10 +110,14 @@ export default function InventoryPage() {
   });
 
   useEffect(() => {
-    fetchInventory();
-    fetchCategories();
-    fetchManufacturers();
-  }, [searchTerm, selectedCategory, showLowStock]);
+    if (token) {
+      fetchInventory();
+      fetchCategories();
+      fetchManufacturers();
+      fetchProductMaster();
+      fetchVehicleModels();
+    }
+  }, [token, searchTerm, selectedCategory, showLowStock]);
 
   const getAuthHeader = () => {
     return { Authorization: `Bearer ${token}` };
@@ -137,6 +171,109 @@ export default function InventoryPage() {
       }
     } catch (error) {
       console.error('Failed to fetch manufacturers');
+    }
+  };
+
+  const fetchProductMaster = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/products`,
+        { headers: getAuthHeader() }
+      );
+      if (response.data.success) {
+        setProductMaster(response.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch product master:', error);
+    }
+  };
+
+  const fetchVehicleModels = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/vehicle-models`,
+        { headers: getAuthHeader() }
+      );
+      if (response.data.success) {
+        setVehicleModels(response.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch vehicle models');
+    }
+  };
+
+  // Handle manufacturer selection to filter models
+  const handleManufacturerChange = (manufacturerId: string) => {
+    setFormData({ 
+      ...formData, 
+      selectedManufacturer: manufacturerId,
+      selectedModel: '',
+      selectedProduct: '',
+      productMasterId: '',
+      unitPrice: 0
+    });
+    
+    if (manufacturerId) {
+      // Filter models by manufacturer
+      const filtered = vehicleModels.filter(
+        m => m.manufacturer_id.toString() === manufacturerId
+      );
+      setFilteredModels(filtered);
+      
+      // Show universal parts (manufacturer_name = Universal Parts)
+      // If no universal parts, show all products
+      const universalParts = productMaster.filter(
+        p => p.manufacturer_name === 'Universal Parts'
+      );
+      
+      if (universalParts.length > 0) {
+        setFilteredProducts(universalParts);
+      } else {
+        // Fallback: show all products
+        setFilteredProducts(productMaster);
+      }
+    } else {
+      setFilteredModels([]);
+      setFilteredProducts([]);
+    }
+  };
+
+  // Handle model selection to filter products
+  const handleModelChange = (modelId: string) => {
+    setFormData({
+      ...formData,
+      selectedModel: modelId,
+      selectedProduct: '',
+      productMasterId: '',
+    });
+
+    // Show universal parts for selected model
+    // If no universal parts, show all products
+    const universalParts = productMaster.filter(
+      p => p.manufacturer_name === 'Universal Parts'
+    );
+    
+    if (universalParts.length > 0) {
+      setFilteredProducts(universalParts);
+    } else {
+      // Fallback: show all products
+      setFilteredProducts(productMaster);
+    }
+  };
+
+  // Handle product selection to auto-fill data
+  const handleProductChange = (productId: string) => {
+    const product = productMaster.find(p => p.id.toString() === productId);
+    
+    if (product) {
+      setFormData({
+        ...formData,
+        selectedProduct: productId,
+        productMasterId: productId,
+        brand: product.manufacturer_name || '',
+        unitPrice: product.unit_price || 0,
+        sellingPrice: (product.unit_price || 0) * 1.2, // 20% markup default
+      });
     }
   };
 
@@ -244,6 +381,9 @@ export default function InventoryPage() {
   const resetForm = () => {
     setFormData({
       productMasterId: '',
+      selectedManufacturer: '',
+      selectedModel: '',
+      selectedProduct: '',
       brand: '',
       barcode: '',
       currentQuantity: 0,
@@ -256,6 +396,8 @@ export default function InventoryPage() {
       supplierName: '',
       supplierContact: '',
     });
+    setFilteredModels([]);
+    setFilteredProducts([]);
     setSelectedItem(null);
   };
 
@@ -432,115 +574,239 @@ export default function InventoryPage() {
             </div>
             <form onSubmit={handleAddInventory} className="p-6">
               <div className="grid grid-cols-2 gap-4">
+                {/* Manufacturer Dropdown */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                  <input
-                    type="text"
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Manufacturer/Brand <span className="text-red-500">*</span>
+                  </label>
+                  <select
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-                    value={formData.brand}
-                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                  />
+                    value={formData.selectedManufacturer}
+                    onChange={(e) => handleManufacturerChange(e.target.value)}
+                  >
+                    <option value="">Select Manufacturer</option>
+                    {manufacturers.map((manufacturer) => (
+                      <option key={manufacturer.id} value={manufacturer.id}>
+                        {manufacturer.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
+                {/* Bike Model Dropdown */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bike Model <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    disabled={!formData.selectedManufacturer}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    value={formData.selectedModel}
+                    onChange={(e) => handleModelChange(e.target.value)}
+                  >
+                    <option value="">
+                      {formData.selectedManufacturer ? 'Select Bike Model' : 'Select manufacturer first'}
+                    </option>
+                    {filteredModels.map((model) => (
+                      <option key={model.id} value={model.id}>
+                        {model.model_name} ({model.engine_capacity})
+                      </option>
+                    ))}
+                  </select>
+                  {formData.selectedManufacturer && filteredModels.length === 0 && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      No models available for this manufacturer
+                    </p>
+                  )}
+                </div>
+
+                {/* Spare Part Name Dropdown - Full Width */}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Spare Part Item <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    disabled={!formData.selectedModel}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    value={formData.selectedProduct}
+                    onChange={(e) => handleProductChange(e.target.value)}
+                  >
+                    <option value="">
+                      {formData.selectedModel ? 'Select Spare Part' : 'Select bike model first'}
+                    </option>
+                    {filteredProducts.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name} - {product.part_number}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.selectedModel && filteredProducts.length === 0 && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      No parts available. Universal parts will be shown after model selection.
+                    </p>
+                  )}
+                </div>
+
+                {/* Barcode */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Barcode/SKU</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.barcode}
                     onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                    placeholder="Enter or scan barcode"
                   />
                 </div>
+
+                {/* Current Quantity */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Current Quantity <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="number"
                     required
+                    min="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.currentQuantity}
                     onChange={(e) => setFormData({ ...formData, currentQuantity: parseInt(e.target.value) })}
                   />
                 </div>
+
+                {/* Minimum Stock Level */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Stock</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Minimum Stock Level <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="number"
                     required
+                    min="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.minimumStockLevel}
                     onChange={(e) => setFormData({ ...formData, minimumStockLevel: parseInt(e.target.value) })}
                   />
                 </div>
+
+                {/* Maximum Stock Level */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Stock</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Stock Level</label>
                   <input
                     type="number"
+                    min="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.maximumStockLevel}
                     onChange={(e) => setFormData({ ...formData, maximumStockLevel: parseInt(e.target.value) })}
                   />
                 </div>
+
+                {/* Reorder Point */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Point</label>
                   <input
                     type="number"
+                    min="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.reorderPoint}
                     onChange={(e) => setFormData({ ...formData, reorderPoint: parseInt(e.target.value) })}
                   />
                 </div>
+
+                {/* Unit Price */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit Price (₹)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Unit Price (₹) <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     required
+                    min="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.unitPrice}
                     onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) })}
                   />
                 </div>
+
+                {/* Selling Price */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Selling Price (₹)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Selling Price (₹) <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     required
+                    min="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.sellingPrice}
                     onChange={(e) => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) })}
                   />
                 </div>
+
+                {/* Storage Location */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Storage Location</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.storageLocation}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, storageLocation: e.target.value })}
+                    placeholder="e.g., Shelf A1, Bin 23"
                   />
                 </div>
+
+                {/* Supplier Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.supplierName}
-                    onChange={(e) => setFormData({ ...formData, bin_number: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, supplierName: e.target.value })}
+                    placeholder="Supplier or vendor name"
                   />
                 </div>
               </div>
+
+              {/* Selected Product Info */}
+              {formData.selectedProduct && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-blue-900 mb-2">Selected Product Details</h3>
+                  {(() => {
+                    const product = productMaster.find(p => p.id.toString() === formData.selectedProduct);
+                    if (product) {
+                      return (
+                        <div className="text-sm text-blue-800 space-y-1">
+                          <p><span className="font-medium">Part Number:</span> {product.part_number}</p>
+                          <p><span className="font-medium">Category:</span> {product.category_name}</p>
+                          {product.description && (
+                            <p><span className="font-medium">Description:</span> {product.description}</p>
+                          )}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
+              )}
+
+              {/* Action Buttons */}
               <div className="flex gap-3 mt-6">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
-                  Add Item
+                  Add to Inventory
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowAddModal(false); resetForm(); }}
-                  className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+                  className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium"
                 >
                   Cancel
                 </button>

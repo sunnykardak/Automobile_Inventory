@@ -170,9 +170,9 @@ exports.createJob = async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
-        customerName, customerPhone, customerEmail,
-        vehicleNumber, vehicleType, vehicleBrand, vehicleModel,
-        reportedIssues, assignedMechanicId, estimatedCost,
+        customerName, customerPhone, customerEmail || null,
+        vehicleNumber, vehicleType, vehicleBrand || null, vehicleModel || null,
+        reportedIssues, assignedMechanicId || null, estimatedCost || null,
         laborCharges || 0, req.user.id,
       ]
     );

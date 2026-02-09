@@ -22,6 +22,8 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 const manufacturerRoutes = require('./routes/manufacturer.routes');
 const categoryRoutes = require('./routes/category.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
+const productRoutes = require('./routes/product.routes');
+const vehicleModelRoutes = require('./routes/vehicleModel.routes');
 
 const app = express();
 
@@ -90,6 +92,8 @@ app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 app.use(`${API_PREFIX}/manufacturers`, manufacturerRoutes);
 app.use(`${API_PREFIX}/categories`, categoryRoutes);
 app.use(`${API_PREFIX}/attendance`, attendanceRoutes);
+app.use(`${API_PREFIX}/products`, productRoutes);
+app.use(`${API_PREFIX}/vehicle-models`, vehicleModelRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
