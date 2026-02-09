@@ -2,15 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import {
-  Home,
-  Clipboard,
-  Package,
-  Users,
-  BarChart2,
-  User,
-  HelpCircle,
-  X,
+  LayoutDashboard, ClipboardList, Package, Users, BarChart3,
+  User, HelpCircle, X, Wrench, LogOut,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,84 +14,108 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Tasks / Jobs', href: '/dashboard/jobs', icon: Clipboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Tasks / Jobs', href: '/dashboard/jobs', icon: ClipboardList },
   { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
   { name: 'Employees', href: '/dashboard/employees', icon: Users },
-  { name: 'Reports', href: '/dashboard/reports', icon: BarChart2 },
+  { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { name: 'My Account', href: '/dashboard/account', icon: User },
   { name: 'Help & Support', href: '/dashboard/help', icon: HelpCircle },
 ];
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   return (
     <>
-      {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-50
-          w-64 bg-sidebar-bg text-white
+          w-72 bg-sidebar-bg
           transform transition-transform duration-300 ease-in-out
+          flex flex-col
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
-        {/* Logo */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <div>
-            <h1 className="text-xl font-bold">
-              {process.env.NEXT_PUBLIC_GARAGE_NAME || 'Auto Garage'}
-            </h1>
-            <p className="text-xs text-gray-400 mt-1">Inventory System</p>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <Wrench className="text-white" size={22} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-white">
+                {process.env.NEXT_PUBLIC_GARAGE_NAME || 'Auto Garage'}
+              </h1>
+              <p className="text-xs text-gray-400">Management System</p>
+            </div>
           </div>
           <button
-            className="lg:hidden text-gray-400 hover:text-white"
+            className="lg:hidden text-gray-400 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
             onClick={() => setSidebarOpen(false)}
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || 
+              (item.href !== '/dashboard' && pathname.startsWith(item.href));
 
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={`
-                  flex items-center space-x-3 px-4 py-3 rounded-lg
-                  transition-colors duration-200
-                  ${
-                    isActive
-                      ? 'bg-sidebar-active text-white'
-                      : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
+                  flex items-center gap-3 px-4 py-3 rounded-xl
+                  transition-all duration-200 group
+                  ${isActive
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
                   }
                 `}
                 onClick={() => setSidebarOpen(false)}
               >
-                <Icon size={20} />
+                <Icon size={20} className={isActive ? '' : 'group-hover:scale-110 transition-transform'} />
                 <span className="font-medium">{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-          <div className="text-xs text-gray-400 text-center">
+        <div className="p-4 border-t border-white/10">
+          <div className="flex items-center gap-3 px-4 py-3 mb-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+              {user?.first_name?.[0] || user?.username?.[0] || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">
+                {user?.first_name || user?.username || 'User'}
+              </p>
+              <p className="text-xs text-gray-400 truncate">{user?.role_name || 'Employee'}</p>
+            </div>
+          </div>
+          
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+          >
+            <LogOut size={20} />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
+
+        <div className="px-6 py-4 border-t border-white/10">
+          <div className="text-xs text-gray-500 text-center">
             <p>Version 1.0.0</p>
             <p className="mt-1">© 2026 Auto Garage</p>
           </div>
