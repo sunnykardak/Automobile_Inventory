@@ -97,6 +97,7 @@ export default function JobsPage() {
     customerName: '', customerPhone: '', customerEmail: '',
     vehicleNumber: '', vehicleType: 'Bike', vehicleBrand: '', vehicleModel: '',
     reportedIssues: '', assignedMechanicId: '', estimatedCost: 0, laborCharges: 0,
+    labourChargeIds: [] as number[],
   });
 
   const [productForm, setProductForm] = useState({ inventoryId: '', quantity: 1 });
@@ -105,7 +106,7 @@ export default function JobsPage() {
   });
 
   const getAuthHeader = () => ({ headers: { Authorization: `Bearer ${token}` } });
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
 
   useEffect(() => {
     if (token) {
@@ -114,8 +115,18 @@ export default function JobsPage() {
       fetchInventory();
       fetchManufacturers();
       fetchVehicleModels();
+      fetchLabourCharges();
     }
   }, [token]);
+
+  const [labourChargeOptions, setLabourChargeOptions] = useState<{ id: number; name: string; amount: number }[]>([]);
+
+  const fetchLabourCharges = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/labour-charges`, getAuthHeader());
+      if (res.data.success) setLabourChargeOptions(res.data.data);
+    } catch (err) { console.error('Failed to fetch labour charges'); }
+  };
 
   const fetchJobs = async () => {
     try {
@@ -175,7 +186,7 @@ export default function JobsPage() {
         reported_issues: formData.reportedIssues,
         assigned_mechanic_id: formData.assignedMechanicId || null,
         estimated_cost: formData.estimatedCost,
-        labor_charges: formData.laborCharges,
+        labourChargeIds: formData.labourChargeIds,
       }, getAuthHeader());
       if (response.data.success) {
         toast.success('Job created successfully');
@@ -260,6 +271,7 @@ export default function JobsPage() {
       customerName: '', customerPhone: '', customerEmail: '',
       vehicleNumber: '', vehicleType: 'Bike', vehicleBrand: '', vehicleModel: '',
       reportedIssues: '', assignedMechanicId: '', estimatedCost: 0, laborCharges: 0,
+      labourChargeIds: [],
     });
   };
 
@@ -428,7 +440,28 @@ export default function JobsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div><label className="label">Mechanic</label><select className="select" value={formData.assignedMechanicId} onChange={e => setFormData({ ...formData, assignedMechanicId: e.target.value })}><option value="">Assign Later</option>{employees.filter(e => e.designation?.includes('Mechanic')).map(e => <option key={e.id} value={e.id}>{e.first_name} {e.last_name}</option>)}</select></div>
                   <div><label className="label">Estimated Cost (₹)</label><input type="number" min="0" className="input" value={formData.estimatedCost} onChange={e => setFormData({ ...formData, estimatedCost: Number(e.target.value) })} /></div>
-                  <div><label className="label">Labor Charges (₹)</label><input type="number" min="0" className="input" value={formData.laborCharges} onChange={e => setFormData({ ...formData, laborCharges: Number(e.target.value) })} /></div>
+                  <div>
+                    <label className="label">Labor Charges (₹)</label>
+                    <input type="number" min="0" className="input" value={formData.laborCharges} onChange={e => setFormData({ ...formData, laborCharges: Number(e.target.value) })} />
+                    {labourChargeOptions.length > 0 && (
+                      <div className="mt-2 text-sm">
+                        <div className="text-xs text-gray-500 mb-1">Or select labour items:</div>
+                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                          {labourChargeOptions.map(opt => (
+                            <label key={opt.id} className="flex items-center gap-2">
+                              <input type="checkbox" checked={formData.labourChargeIds.includes(opt.id)} onChange={e => {
+                                setFormData({
+                                  ...formData,
+                                  labourChargeIds: e.target.checked ? [...formData.labourChargeIds, opt.id] : formData.labourChargeIds.filter(id => id !== opt.id)
+                                });
+                              }} />
+                              <span>{opt.name} — ₹{Number(opt.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="modal-footer">

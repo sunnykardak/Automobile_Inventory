@@ -24,6 +24,7 @@ const categoryRoutes = require('./routes/category.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
 const productRoutes = require('./routes/product.routes');
 const vehicleModelRoutes = require('./routes/vehicleModel.routes');
+const labourRoutes = require('./routes/labour.routes');
 
 const app = express();
 
@@ -36,7 +37,7 @@ app.use(helmet());
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:3003',
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:3000',
   credentials: true,
   optionsSuccessStatus: 200,
 };
@@ -94,6 +95,7 @@ app.use(`${API_PREFIX}/categories`, categoryRoutes);
 app.use(`${API_PREFIX}/attendance`, attendanceRoutes);
 app.use(`${API_PREFIX}/products`, productRoutes);
 app.use(`${API_PREFIX}/vehicle-models`, vehicleModelRoutes);
+app.use(`${API_PREFIX}/labour-charges`, labourRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
@@ -135,7 +137,7 @@ app.use((err, req, res, next) => {
 // SERVER START
 // ========================================
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 const startServer = async () => {
   try {

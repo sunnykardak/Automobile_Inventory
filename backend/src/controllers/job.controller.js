@@ -150,7 +150,7 @@ exports.createJob = async (req, res) => {
       reportedIssues,
       assignedMechanicId,
       estimatedCost,
-      laborCharges,
+      labourChargeIds,
     } = req.body;
     
     // Validation
@@ -161,19 +161,28 @@ exports.createJob = async (req, res) => {
       });
     }
     
+    // If labourChargeIds provided, compute labour total server-side
+    let labourIds = Array.isArray(labourChargeIds) ? labourChargeIds : [];
+    let labourTotal = 0;
+    if (labourIds.length > 0) {
+      const vals = labourIds.map((_, i) => `$${i + 1}`).join(',');
+      const labourRes = await query(`SELECT id, amount FROM labour_charges WHERE id IN (${vals})`, labourIds);
+      labourTotal = labourRes.rows.reduce((s, r) => s + parseFloat(r.amount), 0);
+    }
+
     const result = await query(
       `INSERT INTO job_cards (
         customer_name, customer_phone, customer_email,
         vehicle_number, vehicle_type, vehicle_brand, vehicle_model,
         reported_issues, assigned_mechanic_id, estimated_cost,
-        labor_charges, created_by
+        labor_charges, labour_charge_ids, created_by
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         customerName, customerPhone, customerEmail || null,
         vehicleNumber, vehicleType, vehicleBrand || null, vehicleModel || null,
         reportedIssues, assignedMechanicId || null, estimatedCost || null,
-        laborCharges || 0, req.user.id,
+        labourTotal || 0, labourIds.length > 0 ? labourIds : null, req.user.id,
       ]
     );
     
@@ -212,10 +221,19 @@ exports.updateJob = async (req, res) => {
       assignedMechanicId,
       estimatedCost,
       actualCost,
-      laborCharges,
+      labourChargeIds,
       status,
     } = req.body;
     
+    // If labourChargeIds provided, compute labour total
+    let labourIds = Array.isArray(labourChargeIds) ? labourChargeIds : [];
+    let labourTotal = 0;
+    if (labourIds.length > 0) {
+      const vals = labourIds.map((_, i) => `$${i + 1}`).join(',');
+      const labourRes = await query(`SELECT id, amount FROM labour_charges WHERE id IN (${vals})`, labourIds);
+      labourTotal = labourRes.rows.reduce((s, r) => s + parseFloat(r.amount), 0);
+    }
+
     const result = await query(
       `UPDATE job_cards SET
         customer_name = COALESCE($1, customer_name),
@@ -230,15 +248,16 @@ exports.updateJob = async (req, res) => {
         estimated_cost = COALESCE($10, estimated_cost),
         actual_cost = COALESCE($11, actual_cost),
         labor_charges = COALESCE($12, labor_charges),
-        status = COALESCE($13, status),
-        completed_at = CASE WHEN $13 = 'Completed' THEN CURRENT_TIMESTAMP ELSE completed_at END
-       WHERE id = $14
+        labour_charge_ids = COALESCE($13, labour_charge_ids),
+        status = COALESCE($14, status),
+        completed_at = CASE WHEN COALESCE($14, status) = 'Completed' THEN CURRENT_TIMESTAMP ELSE completed_at END
+       WHERE id = $15
        RETURNING *`,
       [
         customerName, customerPhone, customerEmail,
         vehicleNumber, vehicleType, vehicleBrand, vehicleModel,
         reportedIssues, assignedMechanicId, estimatedCost,
-        actualCost, laborCharges, status, id,
+        actualCost, labourTotal, labourIds.length > 0 ? labourIds : null, status, id,
       ]
     );
     
@@ -395,7 +414,13 @@ exports.completeJob = async (req, res) => {
       
       // Calculate totals
       const productsTotal = products.reduce((sum, p) => sum + parseFloat(p.total_price), 0);
-      const laborCharges = parseFloat(job.labor_charges) || 0;
+        // Recompute labour charges from labour_charge_ids if present
+        let laborCharges = parseFloat(job.labor_charges) || 0;
+        if (job.labour_charge_ids && Array.isArray(job.labour_charge_ids) && job.labour_charge_ids.length > 0) {
+          const vals = job.labour_charge_ids.map((_, i) => `$${i + 1}`).join(',');
+          const labourRes = await client.query(`SELECT amount FROM labour_charges WHERE id IN (${vals})`, job.labour_charge_ids);
+          laborCharges = labourRes.rows.reduce((s, r) => s + parseFloat(r.amount), 0);
+        }
       const subtotal = productsTotal + laborCharges;
       const taxAmount = subtotal * (parseFloat(taxPercentage || process.env.TAX_PERCENTAGE) / 100);
       const discount = parseFloat(discountAmount) || 0;
