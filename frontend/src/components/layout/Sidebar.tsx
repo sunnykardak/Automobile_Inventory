@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard, ClipboardList, Package, Users, BarChart3,
-  User, HelpCircle, X, Wrench, LogOut,
+  User, HelpCircle, X, Wrench, LogOut, Ticket,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -16,6 +16,7 @@ interface SidebarProps {
 const menuItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Tasks / Jobs', href: '/dashboard/jobs', icon: ClipboardList },
+  { name: 'Service Tokens', href: '/dashboard/tokens', icon: Ticket },
   { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
   { name: 'Employees', href: '/dashboard/employees', icon: Users },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },

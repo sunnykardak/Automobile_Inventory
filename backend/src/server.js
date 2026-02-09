@@ -25,6 +25,7 @@ const attendanceRoutes = require('./routes/attendance.routes');
 const productRoutes = require('./routes/product.routes');
 const vehicleModelRoutes = require('./routes/vehicleModel.routes');
 const labourRoutes = require('./routes/labour.routes');
+const tokenRoutes = require('./routes/token.routes');
 
 const app = express();
 
@@ -61,7 +62,7 @@ if (process.env.NODE_ENV === 'development') {
 // Rate limiting
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || (process.env.NODE_ENV === 'development' ? 1000 : 100),
   message: 'Too many requests from this IP, please try again later.',
 });
 app.use('/api/', limiter);
@@ -96,6 +97,7 @@ app.use(`${API_PREFIX}/attendance`, attendanceRoutes);
 app.use(`${API_PREFIX}/products`, productRoutes);
 app.use(`${API_PREFIX}/vehicle-models`, vehicleModelRoutes);
 app.use(`${API_PREFIX}/labour-charges`, labourRoutes);
+app.use(`${API_PREFIX}/service-tokens`, tokenRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
