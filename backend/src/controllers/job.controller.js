@@ -151,6 +151,12 @@ exports.createJob = async (req, res) => {
       assignedMechanicId,
       estimatedCost,
       labourChargeIds,
+      includeWashing,
+      washingVehicleType,
+      washingType,
+      washingDieselWash,
+      washingAddons,
+      washingCharges,
     } = req.body;
     
     // Validation
@@ -175,14 +181,18 @@ exports.createJob = async (req, res) => {
         customer_name, customer_phone, customer_email,
         vehicle_number, vehicle_type, vehicle_brand, vehicle_model,
         reported_issues, assigned_mechanic_id, estimated_cost,
-        labor_charges, labour_charge_ids, created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        labor_charges, labour_charge_ids, created_by,
+        include_washing, washing_vehicle_type, washing_type,
+        washing_diesel_wash, washing_addons, washing_charges
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
        RETURNING *`,
       [
         customerName, customerPhone, customerEmail || null,
         vehicleNumber, vehicleType, vehicleBrand || null, vehicleModel || null,
         reportedIssues, assignedMechanicId || null, estimatedCost || null,
         labourTotal || 0, labourIds.length > 0 ? labourIds : null, req.user.id,
+        includeWashing || false, washingVehicleType || null, washingType || null,
+        washingDieselWash || false, washingAddons || null, washingCharges || 0,
       ]
     );
     
@@ -223,6 +233,12 @@ exports.updateJob = async (req, res) => {
       actualCost,
       labourChargeIds,
       status,
+      includeWashing,
+      washingVehicleType,
+      washingType,
+      washingDieselWash,
+      washingAddons,
+      washingCharges,
     } = req.body;
     
     // If labourChargeIds provided, compute labour total
@@ -250,14 +266,22 @@ exports.updateJob = async (req, res) => {
         labor_charges = COALESCE($12, labor_charges),
         labour_charge_ids = COALESCE($13, labour_charge_ids),
         status = COALESCE($14, status),
+        include_washing = COALESCE($15, include_washing),
+        washing_vehicle_type = COALESCE($16, washing_vehicle_type),
+        washing_type = COALESCE($17, washing_type),
+        washing_diesel_wash = COALESCE($18, washing_diesel_wash),
+        washing_addons = COALESCE($19, washing_addons),
+        washing_charges = COALESCE($20, washing_charges),
         completed_at = CASE WHEN COALESCE($14, status) = 'Completed' THEN CURRENT_TIMESTAMP ELSE completed_at END
-       WHERE id = $15
+       WHERE id = $21
        RETURNING *`,
       [
         customerName, customerPhone, customerEmail,
         vehicleNumber, vehicleType, vehicleBrand, vehicleModel,
         reportedIssues, assignedMechanicId, estimatedCost,
-        actualCost, labourTotal, labourIds.length > 0 ? labourIds : null, status, id,
+        actualCost, labourTotal, labourIds.length > 0 ? labourIds : null, status,
+        includeWashing, washingVehicleType, washingType,
+        washingDieselWash, washingAddons, washingCharges, id,
       ]
     );
     

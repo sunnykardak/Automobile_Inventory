@@ -8,10 +8,10 @@ router.use(authenticate);
 
 router.get('/', jobController.getAllJobs);
 router.get('/:id', jobController.getJobById);
-router.post('/', authorize('Admin', 'Owner', 'Manager'), jobController.createJob);
-router.put('/:id', authorize('Admin', 'Owner', 'Manager'), jobController.updateJob);
+router.post('/', jobController.createJob);
+router.put('/:id', jobController.updateJob);
 router.post('/:id/products', jobController.addProductToJob);
 router.delete('/:id/products/:productId', jobController.removeProductFromJob);
-router.post('/:id/complete', authorize('Admin', 'Owner', 'Manager'), jobController.completeJob);
+router.post('/:id/complete', jobController.completeJob);
 
 module.exports = router;

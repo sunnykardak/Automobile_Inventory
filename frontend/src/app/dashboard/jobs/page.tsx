@@ -76,6 +76,24 @@ const STATUS_COLORS: Record<string, string> = {
 
 const STATUS_OPTIONS = ['Created', 'In Progress', 'Washing', 'Completed'];
 
+const WASHING_VEHICLE_TYPES = [
+  { value: 'bike_125', label: 'Bike 125cc or  Less', waterWash: 50, foamWash: 90, dieselWash: 100 },
+  { value: 'sport_bike', label: 'Sport Bike', waterWash: 60, foamWash: 100, dieselWash: 120 },
+  { value: 'heavy_bike', label: 'Heavy Bike', waterWash: 70, foamWash: 110, dieselWash: 150 },
+  { value: 'car', label: 'Car', waterWash: 250, foamWash: 400, dieselWash: 250 },
+  { value: 'suv', label: 'SUV', waterWash: 350, foamWash: 500, dieselWash: 250 },
+];
+
+const WASHING_TYPES = [
+  { value: 'water_wash', label: 'Water Wash' },
+  { value: 'foam_wash', label: 'Foam Wash' },
+];
+
+const WASHING_ADDON_SERVICES = [
+  { value: 'chain_lubing', label: 'Chain Lubing', price: 50 },
+  { value: 'chain_cleaning', label: 'Chain Cleaning', price: 50 },
+];
+
 export default function JobsPage() {
   const { token } = useAuth();
   const [jobs, setJobs] = useState<JobCard[]>([]);
@@ -98,6 +116,12 @@ export default function JobsPage() {
     vehicleNumber: '', vehicleType: 'Bike', vehicleBrand: '', vehicleModel: '',
     reportedIssues: '', assignedMechanicId: '', estimatedCost: 0, laborCharges: 0,
     labourChargeIds: [] as number[],
+    includeWashing: false,
+    washingVehicleType: 'bike_125',
+    washingType: 'water_wash',
+    washingDieselWash: false,
+    washingAddons: [] as string[],
+    washingCharges: 0,
   });
 
   const [productForm, setProductForm] = useState({ inventoryId: '', quantity: 1 });
@@ -172,6 +196,21 @@ export default function JobsPage() {
     } catch (error) { toast.error('Failed to fetch job details'); }
   };
 
+  const calculateWashingCharges = (vehicleType: string, washType: string, dieselWash: boolean, addons: string[]) => {
+    const vehicle = WASHING_VEHICLE_TYPES.find(v => v.value === vehicleType);
+    if (!vehicle) return 0;
+    
+    let amount = washType === 'water_wash' ? vehicle.waterWash : vehicle.foamWash;
+    if (dieselWash) amount += vehicle.dieselWash;
+    
+    addons.forEach(addon => {
+      const service = WASHING_ADDON_SERVICES.find(a => a.value === addon);
+      if (service) amount += service.price;
+    });
+    
+    return amount;
+  };
+
   const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -187,6 +226,12 @@ export default function JobsPage() {
         assigned_mechanic_id: formData.assignedMechanicId || null,
         estimated_cost: formData.estimatedCost,
         labourChargeIds: formData.labourChargeIds,
+        includeWashing: formData.includeWashing,
+        washingVehicleType: formData.includeWashing ? formData.washingVehicleType : null,
+        washingType: formData.includeWashing ? formData.washingType : null,
+        washingDieselWash: formData.includeWashing ? formData.washingDieselWash : false,
+        washingAddons: formData.includeWashing ? formData.washingAddons : [],
+        washingCharges: formData.includeWashing ? formData.washingCharges : 0,
       }, getAuthHeader());
       if (response.data.success) {
         toast.success('Job created successfully');
@@ -198,7 +243,37 @@ export default function JobsPage() {
       toast.error(error.response?.data?.message || 'Failed to create job');
     }
   };
+  const handleWashingToggle = (checked: boolean) => {
+    if (checked) {
+      const charges = calculateWashingCharges(
+        formData.washingVehicleType,
+        formData.washingType,
+        formData.washingDieselWash,
+        formData.washingAddons
+      );
+      setFormData({ ...formData, includeWashing: true, washingCharges: charges });
+    } else {
+      setFormData({ ...formData, includeWashing: false, washingCharges: 0 });
+    }
+  };
 
+  const handleWashingChange = (field: string, value: any) => {
+    const updatedData = { ...formData, [field]: value };
+    const charges = calculateWashingCharges(
+      field === 'washingVehicleType' ? value : formData.washingVehicleType,
+      field === 'washingType' ? value : formData.washingType,
+      field === 'washingDieselWash' ? value : formData.washingDieselWash,
+      field === 'washingAddons' ? value : formData.washingAddons
+    );
+    setFormData({ ...updatedData, washingCharges: charges });
+  };
+
+  const handleWashingAddonToggle = (addon: string) => {
+    const newAddons = formData.washingAddons.includes(addon)
+      ? formData.washingAddons.filter(a => a !== addon)
+      : [...formData.washingAddons, addon];
+    handleWashingChange('washingAddons', newAddons);
+  };
   const handleUpdateStatus = async (jobId: number, newStatus: string) => {
     try {
       const response = await axios.put(`${API_URL}/jobs/${jobId}`, { status: newStatus }, getAuthHeader());
@@ -217,7 +292,7 @@ export default function JobsPage() {
     try {
       const response = await axios.post(
         `${API_URL}/jobs/${selectedJob.id}/products`,
-        { inventory_id: productForm.inventoryId, quantity: productForm.quantity },
+        { inventoryId: productForm.inventoryId, quantity: productForm.quantity },
         getAuthHeader()
       );
       if (response.data.success) {
@@ -272,6 +347,12 @@ export default function JobsPage() {
       vehicleNumber: '', vehicleType: 'Bike', vehicleBrand: '', vehicleModel: '',
       reportedIssues: '', assignedMechanicId: '', estimatedCost: 0, laborCharges: 0,
       labourChargeIds: [],
+      includeWashing: false,
+      washingVehicleType: 'bike_125',
+      washingType: 'water_wash',
+      washingDieselWash: false,
+      washingAddons: [],
+      washingCharges: 0,
     });
   };
 
@@ -462,6 +543,90 @@ export default function JobsPage() {
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Washing Services Section */}
+                <h3 className="font-semibold text-gray-900 border-b pb-2 pt-4 flex items-center gap-2">
+                  <Droplets size={20} />
+                  Washing Services
+                </h3>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.includeWashing}
+                      onChange={e => handleWashingToggle(e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <span className="font-medium">Include Washing Service</span>
+                  </label>
+
+                  {formData.includeWashing && (
+                    <div className="bg-blue-50 p-4 rounded-lg space-y-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="label">Vehicle Category *</label>
+                          <select
+                            className="select"
+                            value={formData.washingVehicleType}
+                            onChange={e => handleWashingChange('washingVehicleType', e.target.value)}
+                          >
+                            {WASHING_VEHICLE_TYPES.map(v => (
+                              <option key={v.value} value={v.value}>{v.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="label">Wash Type *</label>
+                          <select
+                            className="select"
+                            value={formData.washingType}
+                            onChange={e => handleWashingChange('washingType', e.target.value)}
+                          >
+                            {WASHING_TYPES.map(w => (
+                              <option key={w.value} value={w.value}>{w.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="font-medium text-sm">Add-ons</label>
+                        <div className="grid grid-cols-3 gap-3">
+                          <label className={`p-2 border-2 rounded-lg cursor-pointer transition ${formData.washingDieselWash ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}>
+                            <input
+                              type="checkbox"
+                              checked={formData.washingDieselWash}
+                              onChange={e => handleWashingChange('washingDieselWash', e.target.checked)}
+                              className="mr-2"
+                            />
+                            <span className="text-sm">Diesel Wash (+₹{WASHING_VEHICLE_TYPES.find(v => v.value === formData.washingVehicleType)?.dieselWash})</span>
+                          </label>
+                          {WASHING_ADDON_SERVICES.map(addon => (
+                            <label
+                              key={addon.value}
+                              className={`p-2 border-2 rounded-lg cursor-pointer transition ${formData.washingAddons.includes(addon.value) ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={formData.washingAddons.includes(addon.value)}
+                                onChange={() => handleWashingAddonToggle(addon.value)}
+                                className="mr-2"
+                              />
+                              <span className="text-sm">{addon.label} (+₹{addon.price})</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="bg-white p-3 rounded border border-blue-200">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold">Washing Charges:</span>
+                          <span className="text-lg font-bold text-blue-600">₹{formData.washingCharges}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="modal-footer">

@@ -21,6 +21,11 @@ const WASH_TYPES = [
   { label: 'Foam Wash', value: 'foam_wash' },
 ];
 
+const ADDON_SERVICES = [
+  { label: 'Chain Lubing', value: 'chain_lubing', price: 50 },
+  { label: 'Chain Cleaning', value: 'chain_cleaning', price: 50 },
+];
+
 export default function ServiceTokensPage() {
   const { token } = useAuth();
   const [tokens, setTokens] = useState([]);
@@ -38,6 +43,7 @@ export default function ServiceTokensPage() {
     vehicle_type: '',
     wash_type: '',
     diesel_wash: false,
+    addon_services: [] as string[],
     amount: 0,
     notes: ''
   });
@@ -118,12 +124,13 @@ export default function ServiceTokensPage() {
         [name]: newValue
       };
       
-      // Auto-calculate amount when vehicle type or wash type changes
+      // Auto-calculate amount when vehicle type, wash type, or addons change
       if (name === 'vehicle_type' || name === 'wash_type' || name === 'diesel_wash') {
         updated.amount = calculateAmount(
           name === 'vehicle_type' ? value : prev.vehicle_type,
           name === 'wash_type' ? value : prev.wash_type,
-          name === 'diesel_wash' ? checked : prev.diesel_wash
+          name === 'diesel_wash' ? checked : prev.diesel_wash,
+          prev.addon_services
         );
       }
       
@@ -131,7 +138,21 @@ export default function ServiceTokensPage() {
     });
   };
 
-  const calculateAmount = (vehicleType: string, washType: string, dieselWash: boolean) => {
+  const handleAddonToggle = (addonValue: string) => {
+    setFormData(prev => {
+      const addonServices = prev.addon_services.includes(addonValue)
+        ? prev.addon_services.filter(s => s !== addonValue)
+        : [...prev.addon_services, addonValue];
+      
+      return {
+        ...prev,
+        addon_services: addonServices,
+        amount: calculateAmount(prev.vehicle_type, prev.wash_type, prev.diesel_wash, addonServices)
+      };
+    });
+  };
+
+  const calculateAmount = (vehicleType: string, washType: string, dieselWash: boolean, addonServices: string[]) => {
     if (!vehicleType || !washType) return 0;
     
     const vehicle = VEHICLE_TYPES.find(v => v.value === vehicleType);
@@ -147,6 +168,14 @@ export default function ServiceTokensPage() {
     if (dieselWash) {
       amount += vehicle.dieselWash;
     }
+    
+    // Add addon services
+    addonServices.forEach(addonValue => {
+      const addon = ADDON_SERVICES.find(a => a.value === addonValue);
+      if (addon) {
+        amount += addon.price;
+      }
+    });
     
     return amount;
   };
@@ -166,7 +195,10 @@ export default function ServiceTokensPage() {
       const vehicleLabel = VEHICLE_TYPES.find(v => v.value === formData.vehicle_type)?.label || '';
       const washLabel = WASH_TYPES.find(w => w.value === formData.wash_type)?.label || '';
       const dieselLabel = formData.diesel_wash ? ' + Diesel Wash' : '';
-      const serviceType = `${vehicleLabel} - ${washLabel}${dieselLabel}`;
+      const addonsLabel = formData.addon_services.length > 0
+        ? ' + ' + formData.addon_services.map(a => ADDON_SERVICES.find(s => s.value === a)?.label).join(' + ')
+        : '';
+      const serviceType = `${vehicleLabel} - ${washLabel}${dieselLabel}${addonsLabel}`;
       
       const submitData = {
         customer_name: formData.customer_name,
@@ -192,6 +224,7 @@ export default function ServiceTokensPage() {
           vehicle_type: '',
           wash_type: '',
           diesel_wash: false,
+          addon_services: [],
           amount: 0,
           notes: ''
         });
@@ -555,20 +588,41 @@ export default function ServiceTokensPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Add-ons
                 </label>
-                <label className="flex items-center gap-2 px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-blue-300 hover:bg-gray-50">
-                  <input
-                    type="checkbox"
-                    name="diesel_wash"
-                    checked={formData.diesel_wash}
-                    onChange={handleInputChange}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                  />
-                  <span className="text-sm font-medium">Diesel Wash (+₹{formData.vehicle_type ? VEHICLE_TYPES.find(v => v.value === formData.vehicle_type)?.dieselWash || 0 : 0})</span>
-                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <label className="flex items-center gap-2 px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-blue-300 hover:bg-gray-50">
+                    <input
+                      type="checkbox"
+                      name="diesel_wash"
+                      checked={formData.diesel_wash}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium">Diesel Wash (+₹{formData.vehicle_type ? VEHICLE_TYPES.find(v => v.value === formData.vehicle_type)?.dieselWash || 0 : 0})</span>
+                  </label>
+                  
+                  {ADDON_SERVICES.map(addon => (
+                    <label 
+                      key={addon.value}
+                      className={`flex items-center gap-2 px-4 py-3 border-2 rounded-lg cursor-pointer transition-all ${
+                        formData.addon_services.includes(addon.value)
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.addon_services.includes(addon.value)}
+                        onChange={() => handleAddonToggle(addon.value)}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium">{addon.label} (+₹{addon.price})</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div>
