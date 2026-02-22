@@ -35,6 +35,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
 
+  // Set up axios interceptors when token changes
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }, [token]);
+
   // Initialize auth state from localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -69,12 +78,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(newUser));
         
-        toast.success('Login successful!');
         router.push('/dashboard');
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed';
-      toast.error(message);
+      const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
       throw new Error(message);
     }
   };
@@ -84,7 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    toast.success('Logged out successfully');
     router.push('/');
   };
 

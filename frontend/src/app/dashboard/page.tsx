@@ -40,8 +40,10 @@ export default function DashboardPage() {
       return;
     }
 
-    fetchDashboardData();
-  }, [isAuthenticated]);
+    if (token) {
+      fetchDashboardData();
+    }
+  }, [isAuthenticated, token]);
 
   const fetchDashboardData = async () => {
     try {

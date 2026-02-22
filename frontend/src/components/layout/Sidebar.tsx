@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  LayoutDashboard, ClipboardList, Package, Users, BarChart3,
+  LayoutDashboard, ClipboardList, Package, BarChart3,
   User, HelpCircle, X, Wrench, LogOut, Ticket,
 } from 'lucide-react';
 
@@ -18,7 +18,6 @@ const menuItems = [
   { name: 'Tasks / Jobs', href: '/dashboard/jobs', icon: ClipboardList },
   { name: 'Service Tokens', href: '/dashboard/tokens', icon: Ticket },
   { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
-  { name: 'Employees', href: '/dashboard/employees', icon: Users },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { name: 'My Account', href: '/dashboard/account', icon: User },
   { name: 'Help & Support', href: '/dashboard/help', icon: HelpCircle },
@@ -69,7 +68,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href || 
+            const isActive = pathname === item.href ||
               (item.href !== '/dashboard' && pathname.startsWith(item.href));
 
             return (
@@ -102,10 +101,10 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               <p className="text-sm font-medium text-white truncate">
                 {user?.first_name || user?.username || 'User'}
               </p>
-              <p className="text-xs text-gray-400 truncate">{user?.role_name || 'Employee'}</p>
+              <p className="text-xs text-gray-400 truncate">{user?.role_name || ''}</p>
             </div>
           </div>
-          
+
           <button
             onClick={logout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
