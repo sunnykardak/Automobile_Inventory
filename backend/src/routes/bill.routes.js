@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { authenticate, authorize } = require('../middleware/auth.middleware');
 const { query } = require('../config/database');
+const { generateInvoicePDF } = require('../utils/pdfGenerator');
 
 router.use(authenticate);
 
@@ -79,6 +80,45 @@ router.put('/:id/payment', authorize('Admin', 'Owner', 'Manager'), async (req, r
     res.json({ success: true, data: result.rows[0] });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Download invoice PDF
+router.get('/:id/pdf', async (req, res) => {
+  try {
+    // Get bill details
+    const billResult = await query(`
+      SELECT b.*, jc.job_number, jc.vehicle_number, jc.vehicle_type
+      FROM bills b
+      LEFT JOIN job_cards jc ON b.job_card_id = jc.id
+      WHERE b.id = $1
+    `, [req.params.id]);
+    
+    if (billResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Bill not found' });
+    }
+    
+    // Get bill items
+    const itemsResult = await query(`
+      SELECT * FROM bill_items WHERE bill_id = $1 ORDER BY id
+    `, [req.params.id]);
+    
+    const billData = {
+      ...billResult.rows[0],
+      items: itemsResult.rows
+    };
+
+    // Set response headers for PDF download
+    const filename = `Invoice_${billData.bill_number.replace(/\//g, '_')}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    
+    // Generate PDF and stream to response
+    await generateInvoicePDF(billData, res);
+    
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate PDF' });
   }
 });
 

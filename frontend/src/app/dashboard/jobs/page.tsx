@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Plus, Search, Eye, CheckCircle, Clock, Droplets, Wrench, Package,
-  Trash2, X, Car, User, AlertCircle, DollarSign,
+  Trash2, X, Car, User, AlertCircle, DollarSign, Download,
 } from 'lucide-react';
 
 interface JobCard {
@@ -28,6 +28,7 @@ interface JobCard {
   status: string;
   created_at: string;
   completed_at: string;
+  bill_id?: number;
   products?: JobProduct[];
 }
 
@@ -338,6 +339,33 @@ export default function JobsPage() {
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to complete job');
+    }
+  };
+
+  const handleDownloadPDF = async (billId: number) => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/bills/${billId}/pdf`,
+        {
+          ...getAuthHeader(),
+          responseType: 'blob',
+        }
+      );
+
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Invoice_${selectedJob?.job_number || billId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Invoice downloaded successfully!');
+    } catch (error: any) {
+      toast.error('Failed to download invoice');
+      console.error('PDF download error:', error);
     }
   };
 
@@ -740,6 +768,15 @@ export default function JobsPage() {
                   {selectedJob.status !== 'Completed' && (
                     <button onClick={() => setShowCompleteModal(true)} className="w-full btn-success flex items-center justify-center gap-2">
                       <CheckCircle size={20} /> Complete Job & Generate Bill
+                    </button>
+                  )}
+                  
+                  {selectedJob.status === 'Completed' && selectedJob.bill_id && (
+                    <button 
+                      onClick={() => handleDownloadPDF(selectedJob.bill_id!)} 
+                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/30"
+                    >
+                      <Download size={20} /> Download Invoice PDF
                     </button>
                   )}
                 </div>

@@ -11,10 +11,13 @@ exports.getAllJobs = async (req, res) => {
     let queryText = `
       SELECT jc.*, 
              e.first_name || ' ' || e.last_name as mechanic_name,
-             u.username as created_by_name
+             u.username as created_by_name,
+             b.id as bill_id,
+             b.bill_number
       FROM job_cards jc
       LEFT JOIN employees e ON jc.assigned_mechanic_id = e.id
       LEFT JOIN users u ON jc.created_by = u.id
+      LEFT JOIN bills b ON jc.id = b.job_card_id
       WHERE 1=1
     `;
     
@@ -87,10 +90,13 @@ exports.getJobById = async (req, res) => {
       `SELECT jc.*,
               e.first_name || ' ' || e.last_name as mechanic_name,
               e.commission_percentage,
-              u.username as created_by_name
+              u.username as created_by_name,
+              b.id as bill_id,
+              b.bill_number
        FROM job_cards jc
        LEFT JOIN employees e ON jc.assigned_mechanic_id = e.id
        LEFT JOIN users u ON jc.created_by = u.id
+       LEFT JOIN bills b ON jc.id = b.job_card_id
        WHERE jc.id = $1`,
       [id]
     );
