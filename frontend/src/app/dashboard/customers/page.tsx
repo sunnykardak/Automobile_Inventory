@@ -348,7 +348,11 @@ export default function CustomersPage() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredCustomers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
+                  <tr 
+                    key={customer.id} 
+                    onClick={() => openViewModal(customer)}
+                    className="hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
@@ -412,21 +416,30 @@ export default function CustomersPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => openViewModal(customer)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openViewModal(customer);
+                          }}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye size={18} />
                         </button>
                         <button
-                          onClick={() => openEditModal(customer)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(customer);
+                          }}
                           className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                           title="Edit Customer"
                         >
                           <Edit size={18} />
                         </button>
                         <button
-                          onClick={() => handleDeleteCustomer(customer.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCustomer(customer.id);
+                          }}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete Customer"
                         >
