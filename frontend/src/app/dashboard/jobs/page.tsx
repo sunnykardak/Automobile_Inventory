@@ -498,7 +498,7 @@ export default function JobsPage() {
                   <th>Job Number</th>
                   <th>Customer</th>
                   <th>Vehicle</th>
-                  <th>Mechanic</th>
+                  <th>Assigned Employee</th>
                   <th>Status</th>
                   <th>Created</th>
                   <th>Actions</th>
@@ -520,7 +520,13 @@ export default function JobsPage() {
                         <p className="text-xs text-gray-500">{job.vehicle_brand} {job.vehicle_model}</p>
                       </div>
                     </td>
-                    <td>{job.mechanic_name || <span className="text-gray-400">Unassigned</span>}</td>
+                    <td>
+                      {job.mechanic_name ? (
+                        <span className="font-medium text-gray-900">{job.mechanic_name}</span>
+                      ) : (
+                        <span className="text-gray-400 italic">Unassigned</span>
+                      )}
+                    </td>
                     <td>
                       <select
                         value={job.status}
@@ -600,7 +606,7 @@ export default function JobsPage() {
                 <h3 className="font-semibold text-gray-900 border-b pb-2 pt-4">Job Details</h3>
                 <div><label className="label">Reported Issues *</label><textarea className="input" rows={3} value={formData.reportedIssues} onChange={e => setFormData({ ...formData, reportedIssues: e.target.value })} required placeholder="Describe the issues..." /></div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div><label className="label">Mechanic</label><select className="select" value={formData.assignedMechanicId} onChange={e => setFormData({ ...formData, assignedMechanicId: e.target.value })}><option value="">Assign Later</option>{employees.filter(e => e.designation?.includes('Mechanic')).map(e => <option key={e.id} value={e.id}>{e.first_name} {e.last_name}</option>)}</select></div>
+                  <div><label className="label">Assigned Employee</label><select className="select" value={formData.assignedMechanicId} onChange={e => setFormData({ ...formData, assignedMechanicId: e.target.value })}><option value="">Assign Later</option>{employees.map(e => <option key={e.id} value={e.id}>{e.first_name} {e.last_name} ({e.designation})</option>)}</select></div>
                   <div><label className="label">Estimated Cost (₹)</label><input type="number" min="0" className="input" value={formData.estimatedCost} onChange={e => setFormData({ ...formData, estimatedCost: Number(e.target.value) })} /></div>
                   <div>
                     <label className="label">Labor Charges (₹)</label>
