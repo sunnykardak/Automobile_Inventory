@@ -26,6 +26,7 @@ const productRoutes = require('./routes/product.routes');
 const vehicleModelRoutes = require('./routes/vehicleModel.routes');
 const labourRoutes = require('./routes/labour.routes');
 const tokenRoutes = require('./routes/token.routes');
+const customerRoutes = require('./routes/customer.routes');
 
 const app = express();
 
@@ -86,6 +87,7 @@ app.get('/health', (req, res) => {
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/employees`, employeeRoutes);
+app.use(`${API_PREFIX}/customers`, customerRoutes);
 app.use(`${API_PREFIX}/jobs`, jobRoutes);
 app.use(`${API_PREFIX}/inventory`, inventoryRoutes);
 app.use(`${API_PREFIX}/bills`, billRoutes);
