@@ -9,6 +9,7 @@ require('dotenv').config();
 
 const { testConnection } = require('./config/database');
 const logger = require('./utils/logger');
+const { errorConverter, errorHandler, notFoundHandler } = require('./middleware/error.middleware');
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
@@ -114,28 +115,14 @@ app.get('/', (req, res) => {
 // ERROR HANDLING
 // ========================================
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found',
-    path: req.originalUrl,
-  });
-});
+// 404 handler - must be after all valid routes
+app.use(notFoundHandler);
 
-// Global error handler
-app.use((err, req, res, next) => {
-  logger.error(err.stack);
-  
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
-  
-  res.status(statusCode).json({
-    success: false,
-    message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-  });
-});
+// Error converter - converts non-ApiError to ApiError
+app.use(errorConverter);
+
+// Global error handler - sends error response
+app.use(errorHandler);
 
 // ========================================
 // SERVER START

@@ -1,5 +1,13 @@
 const { query, transaction } = require('../config/database');
 const logger = require('../utils/logger');
+const { ApiError } = require('../middleware/error.middleware');
+const {
+  validateRequired,
+  validateEmail,
+  validatePhone,
+  sanitizeString,
+  validateEnum,
+} = require('../utils/validation');
 
 // @desc    Get all job cards
 // @route   GET /api/v1/jobs
@@ -143,19 +151,20 @@ exports.getJobById = async (req, res) => {
 // @desc    Create new job card
 // @route   POST /api/v1/jobs
 // @access  Private
-exports.createJob = async (req, res) => {
+exports.createJob = async (req, res, next) => {
   try {
+    // Use snake_case to match frontend field names
     const {
-      customerName,
-      customerPhone,
-      customerEmail,
-      vehicleNumber,
-      vehicleType,
-      vehicleBrand,
-      vehicleModel,
-      reportedIssues,
-      assignedMechanicId,
-      estimatedCost,
+      customer_name,
+      customer_phone,
+      customer_email,
+      vehicle_number,
+      vehicle_type,
+      vehicle_brand,
+      vehicle_model,
+      reported_issues,
+      assigned_mechanic_id,
+      estimated_cost,
       labourChargeIds,
       includeWashing,
       washingVehicleType,
@@ -166,12 +175,36 @@ exports.createJob = async (req, res) => {
     } = req.body;
     
     // Validation
-    if (!customerName || !customerPhone || !vehicleNumber || !vehicleType || !reportedIssues) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide all required fields',
-      });
+    validateRequired(
+      ['customer_name', 'customer_phone', 'vehicle_number', 'vehicle_type', 'reported_issues'],
+      {
+        customer_name,
+        customer_phone,
+        vehicle_number,
+        vehicle_type,
+        reported_issues,
+      }
+    );
+    
+    // Validate phone
+    validatePhone(customer_phone);
+    
+    // Validate email if provided
+    if (customer_email) {
+      validateEmail(customer_email);
     }
+    
+    // Sanitize inputs
+    const sanitizedData = {
+      customerName: sanitizeString(customer_name),
+      customerPhone: sanitizeString(customer_phone),
+      customerEmail: customer_email ? sanitizeString(customer_email) : null,
+      vehicleNumber: sanitizeString(vehicle_number)?.toUpperCase(),
+      vehicleType: sanitizeString(vehicle_type),
+      vehicleBrand: vehicle_brand ? sanitizeString(vehicle_brand) : null,
+      vehicleModel: vehicle_model ? sanitizeString(vehicle_model) : null,
+      reportedIssues: sanitizeString(reported_issues),
+    };
     
     // If labourChargeIds provided, compute labour total server-side
     let labourIds = Array.isArray(labourChargeIds) ? labourChargeIds : [];
@@ -179,7 +212,20 @@ exports.createJob = async (req, res) => {
     if (labourIds.length > 0) {
       const vals = labourIds.map((_, i) => `$${i + 1}`).join(',');
       const labourRes = await query(`SELECT id, amount FROM labour_charges WHERE id IN (${vals})`, labourIds);
+      
+      if (labourRes.rows.length !== labourIds.length) {
+        throw new ApiError(400, 'One or more labour charges not found');
+      }
+      
       labourTotal = labourRes.rows.reduce((s, r) => s + parseFloat(r.amount), 0);
+    }
+    
+    // Validate mechanic if assigned
+    if (assigned_mechanic_id) {
+      const mechanicCheck = await query('SELECT id FROM employees WHERE id = $1', [assigned_mechanic_id]);
+      if (mechanicCheck.rows.length === 0) {
+        throw new ApiError(400, 'Assigned mechanic not found');
+      }
     }
 
     const result = await query(
@@ -193,12 +239,25 @@ exports.createJob = async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
        RETURNING *`,
       [
-        customerName, customerPhone, customerEmail || null,
-        vehicleNumber, vehicleType, vehicleBrand || null, vehicleModel || null,
-        reportedIssues, assignedMechanicId || null, estimatedCost || null,
-        labourTotal || 0, labourIds.length > 0 ? labourIds : null, req.user.id,
-        includeWashing || false, washingVehicleType || null, washingType || null,
-        washingDieselWash || false, washingAddons || null, washingCharges || 0,
+        sanitizedData.customerName,
+        sanitizedData.customerPhone,
+        sanitizedData.customerEmail,
+        sanitizedData.vehicleNumber,
+        sanitizedData.vehicleType,
+        sanitizedData.vehicleBrand,
+        sanitizedData.vehicleModel,
+        sanitizedData.reportedIssues,
+        assigned_mechanic_id || null,
+        estimated_cost || null,
+        labourTotal || 0,
+        labourIds.length > 0 ? labourIds : null,
+        req.user.id,
+        includeWashing || false,
+        washingVehicleType || null,
+        washingType || null,
+        washingDieselWash || false,
+        washingAddons || null,
+        washingCharges || 0,
       ]
     );
     
@@ -211,11 +270,7 @@ exports.createJob = async (req, res) => {
     });
   } catch (error) {
     logger.error('Create job error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create job',
-      error: error.message,
-    });
+    next(error);
   }
 };
 

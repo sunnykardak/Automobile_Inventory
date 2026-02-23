@@ -5,7 +5,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  Plus, Search, Eye, CheckCircle, Clock, Droplets, Wrench, Package,
+  Plus, Search, Eye, CheckCircle, Droplets, Wrench, Package,
   Trash2, X, Car, User, AlertCircle, DollarSign, Download,
 } from 'lucide-react';
 
@@ -142,6 +142,7 @@ export default function JobsPage() {
       fetchVehicleModels();
       fetchLabourCharges();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const [labourChargeOptions, setLabourChargeOptions] = useState<{ id: number; name: string; amount: number }[]>([]);
@@ -150,7 +151,9 @@ export default function JobsPage() {
     try {
       const res = await axios.get(`${API_URL}/labour-charges`, getAuthHeader());
       if (res.data.success) setLabourChargeOptions(res.data.data);
-    } catch (err) { console.error('Failed to fetch labour charges'); }
+    } catch {
+      console.error('Failed to fetch labour charges');
+    }
   };
 
   const fetchJobs = async () => {
@@ -158,43 +161,56 @@ export default function JobsPage() {
       setLoading(true);
       const response = await axios.get(`${API_URL}/jobs`, getAuthHeader());
       if (response.data.success) setJobs(response.data.data);
-    } catch (error) { toast.error('Failed to fetch jobs'); }
-    finally { setLoading(false); }
+    } catch {
+      toast.error('Failed to fetch jobs');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchEmployees = async () => {
     try {
       const response = await axios.get(`${API_URL}/employees`, getAuthHeader());
       if (response.data.success) setEmployees(response.data.data);
-    } catch (error) { console.error('Failed to fetch employees'); }
+    } catch {
+      console.error('Failed to fetch employees');
+    }
   };
 
   const fetchInventory = async () => {
     try {
       const response = await axios.get(`${API_URL}/inventory`, getAuthHeader());
       if (response.data.success) setInventory(response.data.data);
-    } catch (error) { console.error('Failed to fetch inventory'); }
+    } catch {
+      console.error('Failed to fetch inventory');
+    }
   };
 
   const fetchManufacturers = async () => {
     try {
       const response = await axios.get(`${API_URL}/manufacturers`, getAuthHeader());
       if (response.data.success) setManufacturers(response.data.data);
-    } catch (error) { console.error('Failed to fetch manufacturers'); }
+    } catch {
+      console.error('Failed to fetch manufacturers');
+    }
   };
 
   const fetchVehicleModels = async () => {
     try {
       const response = await axios.get(`${API_URL}/vehicle-models`, getAuthHeader());
       if (response.data.success) setVehicleModels(response.data.data);
-    } catch (error) { console.error('Failed to fetch models'); }
+    } catch {
+      console.error('Failed to fetch models');
+    }
   };
 
   const fetchJobDetails = async (jobId: number) => {
     try {
       const response = await axios.get(`${API_URL}/jobs/${jobId}`, getAuthHeader());
       if (response.data.success) setSelectedJob(response.data.data);
-    } catch (error) { toast.error('Failed to fetch job details'); }
+    } catch {
+      toast.error('Failed to fetch job details');
+    }
   };
 
   const calculateWashingCharges = (vehicleType: string, washType: string, dieselWash: boolean, addons: string[]) => {
@@ -240,8 +256,9 @@ export default function JobsPage() {
         resetForm();
         fetchJobs();
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to create job');
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to create job');
     }
   };
   const handleWashingToggle = (checked: boolean) => {
@@ -258,13 +275,13 @@ export default function JobsPage() {
     }
   };
 
-  const handleWashingChange = (field: string, value: any) => {
+  const handleWashingChange = (field: string, value: string | boolean | string[]) => {
     const updatedData = { ...formData, [field]: value };
     const charges = calculateWashingCharges(
-      field === 'washingVehicleType' ? value : formData.washingVehicleType,
-      field === 'washingType' ? value : formData.washingType,
-      field === 'washingDieselWash' ? value : formData.washingDieselWash,
-      field === 'washingAddons' ? value : formData.washingAddons
+      field === 'washingVehicleType' ? value as string : formData.washingVehicleType,
+      field === 'washingType' ? value as string : formData.washingType,
+      field === 'washingDieselWash' ? value as boolean : formData.washingDieselWash,
+      field === 'washingAddons' ? value as string[] : formData.washingAddons
     );
     setFormData({ ...updatedData, washingCharges: charges });
   };
@@ -283,8 +300,9 @@ export default function JobsPage() {
         fetchJobs();
         if (selectedJob) fetchJobDetails(jobId);
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update status');
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to update status');
     }
   };
 
@@ -301,8 +319,9 @@ export default function JobsPage() {
         setProductForm({ inventoryId: '', quantity: 1 });
         fetchJobDetails(selectedJob.id);
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to add product');
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to add product');
     }
   };
 
@@ -312,8 +331,9 @@ export default function JobsPage() {
       await axios.delete(`${API_URL}/jobs/${selectedJob.id}/products/${productId}`, getAuthHeader());
       toast.success('Product removed');
       fetchJobDetails(selectedJob.id);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to remove product');
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to remove product');
     }
   };
 
@@ -337,8 +357,9 @@ export default function JobsPage() {
         setSelectedJob(null);
         fetchJobs();
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to complete job');
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to complete job');
     }
   };
 
@@ -363,7 +384,7 @@ export default function JobsPage() {
       window.URL.revokeObjectURL(url);
       
       toast.success('Invoice downloaded successfully!');
-    } catch (error: any) {
+    } catch (error) {
       toast.error('Failed to download invoice');
       console.error('PDF download error:', error);
     }
