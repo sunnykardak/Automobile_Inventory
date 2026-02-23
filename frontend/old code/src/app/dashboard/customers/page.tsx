@@ -315,7 +315,7 @@ export default function CustomersPage() {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50/80 border-b border-gray-200">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Customer
@@ -355,7 +355,7 @@ export default function CustomersPage() {
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-brand-800 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                           {customer.customer_name[0]}
                         </div>
                         <div className="min-w-0">
@@ -392,7 +392,7 @@ export default function CustomersPage() {
                       <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
                         customer.customer_type === 'Business' 
                           ? 'bg-purple-100 text-purple-800' 
-                          : 'bg-brand-100 text-brand-800'
+                          : 'bg-blue-100 text-blue-800'
                       }`}>
                         {customer.customer_type}
                       </span>
@@ -420,7 +420,7 @@ export default function CustomersPage() {
                             e.stopPropagation();
                             openViewModal(customer);
                           }}
-                          className="p-2 text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye size={18} />
@@ -610,7 +610,7 @@ export default function CustomersPage() {
             <div className="modal-header">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">{selectedCustomer.customer_name}</h2>
-                <span className={`badge mt-1 ${selectedCustomer.customer_type === 'Business' ? 'bg-purple-100 text-purple-800' : 'bg-brand-100 text-brand-800'}`}>
+                <span className={`badge mt-1 ${selectedCustomer.customer_type === 'Business' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
                   {selectedCustomer.customer_type}
                 </span>
               </div>
@@ -678,7 +678,7 @@ export default function CustomersPage() {
                         <div key={vehicle.id} className="bg-gray-50 p-4 rounded-lg">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <Car size={20} className="text-brand-600" />
+                              <Car size={20} className="text-blue-600" />
                               <div>
                                 <p className="font-semibold text-gray-900 font-mono">{vehicle.vehicle_number}</p>
                                 <p className="text-sm text-gray-600">{vehicle.vehicle_brand} {vehicle.vehicle_model}</p>

@@ -22,6 +22,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
 
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -39,6 +40,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
     e.preventDefault();
     if (searchQuery.trim()) {
       toast.success(`Searching for: ${searchQuery}`);
+      // TODO: Implement global search
     }
   };
 
@@ -51,70 +53,51 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
   const unreadCount = notifications.filter(n => n.unread).length;
 
   return (
-    <header className="bg-white/80 backdrop-blur-xl border-b border-gray-100/80 sticky top-0 z-30">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
       <div className="flex items-center justify-between px-4 lg:px-6 py-3">
         {/* Left Section */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
-            className="lg:hidden p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors"
+            className="lg:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             onClick={() => setSidebarOpen(true)}
           >
-            <Menu size={22} />
+            <Menu size={24} />
           </button>
 
           {/* Desktop Search */}
           <form onSubmit={handleSearch} className="hidden md:block">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
                 placeholder="Search jobs, vehicles, products..."
-                className="pl-10 pr-4 py-2.5 w-80 lg:w-96 rounded-xl text-sm
-                  bg-gray-50/80 border border-gray-200/60
-                  focus:ring-0 focus:border-brand-500 focus:bg-white 
-                  transition-all text-gray-800 placeholder-gray-400"
-                style={{ outline: 'none' }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#00b4d8';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 180, 216, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '';
-                  e.target.style.boxShadow = '';
-                }}
+                className="pl-10 pr-4 py-2.5 w-80 lg:w-96 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all text-gray-900 placeholder-gray-400"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </form>
 
+          {/* Mobile Search Toggle */}
           <button
-            className="md:hidden p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl"
+            className="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
             onClick={() => setShowSearch(!showSearch)}
           >
-            <Search size={18} />
+            <Search size={20} />
           </button>
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {/* Notifications */}
           <div ref={notificationRef} className="relative">
             <button
-              className="relative p-2.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors"
+              className="relative p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
               onClick={() => setShowNotifications(!showNotifications)}
             >
-              <Bell size={19} />
+              <Bell size={20} />
               {unreadCount > 0 && (
-                <span 
-                  className="absolute top-1.5 right-1.5 w-4.5 h-4.5 text-white text-[10px] font-bold rounded-full flex items-center justify-center"
-                  style={{ 
-                    background: '#ef4444',
-                    width: '18px',
-                    height: '18px',
-                    fontSize: '10px',
-                  }}
-                >
+                <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                   {unreadCount}
                 </span>
               )}
@@ -123,40 +106,29 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             {showNotifications && (
               <div className="dropdown-menu w-80 right-0 mt-2">
                 <div className="px-4 py-3 border-b border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
-                    <span className="text-xs font-medium" style={{ color: '#00b4d8' }}>
-                      {unreadCount} new
-                    </span>
-                  </div>
+                  <h3 className="font-semibold text-gray-900">Notifications</h3>
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {notifications.map((notif) => (
                     <div
                       key={notif.id}
-                      className={`px-4 py-3 cursor-pointer border-b border-gray-50 last:border-b-0 transition-colors ${
-                        notif.unread ? 'bg-brand-50/30' : 'hover:bg-gray-50'
+                      className={`px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-b-0 ${
+                        notif.unread ? 'bg-blue-50/50' : ''
                       }`}
                     >
                       <div className="flex items-start gap-3">
-                        <div
-                          className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
-                          style={{ background: notif.unread ? '#00b4d8' : '#d1d5db' }}
-                        />
+                        <div className={`w-2 h-2 rounded-full mt-2 ${notif.unread ? 'bg-blue-500' : 'bg-gray-300'}`} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-800">{notif.title}</p>
-                          <p className="text-xs text-gray-500 truncate mt-0.5">{notif.message}</p>
-                          <p className="text-[11px] text-gray-400 mt-1">{notif.time}</p>
+                          <p className="text-sm font-medium text-gray-900">{notif.title}</p>
+                          <p className="text-sm text-gray-500 truncate">{notif.message}</p>
+                          <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="px-4 py-2.5 border-t border-gray-100">
-                  <button
-                    className="text-xs font-semibold w-full text-center py-1"
-                    style={{ color: '#00b4d8' }}
-                  >
+                <div className="px-4 py-3 border-t border-gray-100">
+                  <button className="text-sm text-blue-600 hover:text-blue-700 font-medium w-full text-center">
                     View all notifications
                   </button>
                 </div>
@@ -164,65 +136,54 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             )}
           </div>
 
-          {/* Divider */}
-          <div className="hidden lg:block w-px h-8 bg-gray-200 mx-1.5" />
-
           {/* Profile Dropdown */}
           <div ref={profileRef} className="relative">
             <button
-              className="flex items-center gap-2.5 p-1.5 hover:bg-gray-50 rounded-xl transition-colors"
+              className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-xl transition-colors"
               onClick={() => setShowProfileMenu(!showProfileMenu)}
             >
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, #00b4d8 0%, #0096c7 100%)',
-                }}
-              >
-                <span className="text-white font-semibold text-xs">
+              <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                <span className="text-white font-semibold text-sm">
                   {user?.first_name?.[0] || user?.username?.[0] || 'U'}
                 </span>
               </div>
               <div className="hidden lg:block text-left">
-                <p className="text-sm font-semibold text-gray-800 leading-tight">
+                <p className="text-sm font-semibold text-gray-900 leading-tight">
                   {user?.first_name || user?.username || 'User'}
                 </p>
-                <p className="text-[11px] text-gray-500">{user?.role_name || 'Employee'}</p>
+                <p className="text-xs text-gray-500">{user?.role_name || 'Employee'}</p>
               </div>
-              <ChevronDown
-                size={14}
-                className={`hidden lg:block text-gray-400 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`}
-              />
+              <ChevronDown size={16} className={`hidden lg:block text-gray-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
             </button>
 
             {showProfileMenu && (
-              <div className="dropdown-menu w-56">
+              <div className="dropdown-menu w-64">
                 <div className="px-4 py-3 border-b border-gray-100">
-                  <p className="font-semibold text-gray-800 text-sm">{user?.first_name || user?.username}</p>
-                  <p className="text-xs text-gray-500 truncate mt-0.5">{user?.email}</p>
+                  <p className="font-semibold text-gray-900">{user?.first_name || user?.username}</p>
+                  <p className="text-sm text-gray-500 truncate">{user?.email}</p>
                 </div>
-                <div className="p-1.5">
+                <div className="p-2">
                   <button
-                    className="dropdown-item w-full rounded-lg"
+                    className="dropdown-item w-full"
                     onClick={() => { router.push('/dashboard/account'); setShowProfileMenu(false); }}
                   >
-                    <User size={16} />
-                    <span className="text-sm">My Profile</span>
+                    <User size={18} />
+                    <span>My Profile</span>
                   </button>
                   <button
-                    className="dropdown-item w-full rounded-lg"
+                    className="dropdown-item w-full"
                     onClick={() => { router.push('/dashboard/account'); setShowProfileMenu(false); }}
                   >
-                    <Settings size={16} />
-                    <span className="text-sm">Settings</span>
+                    <Settings size={18} />
+                    <span>Settings</span>
                   </button>
-                  <div className="my-1 h-px bg-gray-100" />
+                  <hr className="my-2" />
                   <button
-                    className="dropdown-item w-full rounded-lg text-red-500 hover:!bg-red-50"
+                    className="dropdown-item w-full text-red-600 hover:bg-red-50"
                     onClick={logout}
                   >
-                    <LogOut size={16} />
-                    <span className="text-sm">Logout</span>
+                    <LogOut size={18} />
+                    <span>Logout</span>
                   </button>
                 </div>
               </div>
@@ -233,16 +194,14 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
       {/* Mobile Search Bar */}
       {showSearch && (
-        <div className="md:hidden px-4 pb-3 animate-slide-down">
+        <div className="md:hidden px-4 pb-3 animate-slide-up">
           <form onSubmit={handleSearch}>
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
                 placeholder="Search..."
-                className="pl-10 pr-10 py-2.5 w-full rounded-xl text-sm
-                  bg-gray-50 border border-gray-200
-                  text-gray-800"
+                className="pl-10 pr-10 py-2.5 w-full bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
@@ -252,7 +211,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                 onClick={() => { setShowSearch(false); setSearchQuery(''); }}
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
           </form>

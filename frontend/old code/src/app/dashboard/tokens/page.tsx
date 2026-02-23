@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { FiPrinter, FiCheck, FiPlus, FiSearch } from 'react-icons/fi';
+import { FiPrinter, FiCheck, FiX, FiPlus, FiSearch } from 'react-icons/fi';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
 
@@ -26,35 +26,15 @@ const ADDON_SERVICES = [
   { label: 'Chain Cleaning', value: 'chain_cleaning', price: 50 },
 ];
 
-interface Token {
-  id: number;
-  token_number: string;
-  customer_name: string;
-  customer_phone?: string;
-  bike_number?: string;
-  service_type: string;
-  amount: number;
-  status: string;
-  created_at: string;
-  notes?: string;
-}
-
-interface Stats {
-  total_tokens: number;
-  pending_tokens: number;
-  completed_tokens: number;
-  total_revenue: number;
-}
-
 export default function ServiceTokensPage() {
   const { token } = useAuth();
-  const [tokens, setTokens] = useState<Token[]>([]);
-  const [filteredTokens, setFilteredTokens] = useState<Token[]>([]);
+  const [tokens, setTokens] = useState([]);
+  const [filteredTokens, setFilteredTokens] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState(null);
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -134,9 +114,8 @@ export default function ServiceTokensPage() {
     setFilteredTokens(filtered);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const checked = 'checked' in e.target ? e.target.checked : false;
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
     
     setFormData(prev => {
@@ -201,7 +180,7 @@ export default function ServiceTokensPage() {
     return amount;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.customer_name || !formData.vehicle_type || !formData.wash_type) {
@@ -256,16 +235,15 @@ export default function ServiceTokensPage() {
         // Auto-print the newly created token
         setTimeout(() => printToken(response.data.data), 100);
       }
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Error creating token:', error);
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || 'Failed to create token');
+      toast.error(error.response?.data?.message || 'Failed to create token');
     } finally {
       setLoading(false);
     }
   };
 
-  const completeToken = async (id: number) => {
+  const completeToken = async (id) => {
     try {
       const response = await axios.patch(
         `${API_URL}/service-tokens/${id}/complete`,
@@ -284,9 +262,8 @@ export default function ServiceTokensPage() {
     }
   };
 
-  const printToken = (tokenData: Token) => {
+  const printToken = (tokenData) => {
     const printWindow = window.open('', '', 'width=300,height=400');
-    if (!printWindow) return;
     const tokenDate = new Date(tokenData.created_at).toLocaleString('en-IN');
     
     printWindow.document.write(`
@@ -430,7 +407,7 @@ export default function ServiceTokensPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-gray-900 font-display">Service Tokens</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Service Tokens</h1>
           <p className="text-gray-600 mt-1">Quick service tokens for washing, cleaning, and lubing</p>
         </div>
 
@@ -439,7 +416,7 @@ export default function ServiceTokensPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="text-sm text-gray-600">Total Tokens</div>
-              <div className="text-xl font-bold text-gray-900 font-display">{stats.total_tokens}</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.total_tokens}</div>
             </div>
             <div className="bg-yellow-50 rounded-lg shadow p-6">
               <div className="text-sm text-yellow-600">Pending</div>
@@ -449,8 +426,8 @@ export default function ServiceTokensPage() {
               <div className="text-sm text-green-600">Completed</div>
               <div className="text-2xl font-bold text-green-900">{stats.completed_tokens}</div>
             </div>
-            <div className="bg-brand-50 rounded-lg shadow p-6">
-              <div className="text-sm text-brand-600">Total Revenue</div>
+            <div className="bg-blue-50 rounded-lg shadow p-6">
+              <div className="text-sm text-blue-600">Total Revenue</div>
               <div className="text-2xl font-bold text-blue-900">
                 ₹{Number(stats.total_revenue || 0).toLocaleString('en-IN')}
               </div>
@@ -464,7 +441,7 @@ export default function ServiceTokensPage() {
             <div className="flex gap-2 w-full md:w-auto">
               <button
                 onClick={() => setShowForm(!showForm)}
-                className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 <FiPlus /> New Token
               </button>
@@ -484,14 +461,14 @@ export default function ServiceTokensPage() {
                   placeholder="Search tokens..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
@@ -507,19 +484,19 @@ export default function ServiceTokensPage() {
             <h2 className="text-xl font-semibold mb-4">Create New Token</h2>
             
             {/* Pricing Reference Card */}
-            <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-lg">
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <h3 className="text-sm font-semibold text-blue-900 mb-3">Pricing Chart</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full text-xs">
                   <thead>
-                    <tr className="border-b border-brand-200">
+                    <tr className="border-b border-blue-200">
                       <th className="text-left py-2 px-2 text-blue-900">Vehicle Type</th>
                       <th className="text-right py-2 px-2 text-blue-900">Water Wash</th>
                       <th className="text-right py-2 px-2 text-blue-900">Foam Wash</th>
                       <th className="text-right py-2 px-2 text-blue-900">+Diesel Wash</th>
                     </tr>
                   </thead>
-                  <tbody className="text-brand-800">
+                  <tbody className="text-blue-800">
                     {VEHICLE_TYPES.map(v => (
                       <tr key={v.value} className="border-b border-blue-100">
                         <td className="py-2 px-2 font-medium">{v.label}</td>
@@ -544,7 +521,7 @@ export default function ServiceTokensPage() {
                   value={formData.customer_name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -557,7 +534,7 @@ export default function ServiceTokensPage() {
                   name="customer_phone"
                   value={formData.customer_phone}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -571,7 +548,7 @@ export default function ServiceTokensPage() {
                   value={formData.bike_number}
                   onChange={handleInputChange}
                   placeholder="e.g., MH12AB1234"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -584,7 +561,7 @@ export default function ServiceTokensPage() {
                   value={formData.vehicle_type}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select vehicle type</option>
                   {VEHICLE_TYPES.map(type => (
@@ -602,7 +579,7 @@ export default function ServiceTokensPage() {
                   value={formData.wash_type}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select wash type</option>
                   {WASH_TYPES.map(type => (
@@ -622,7 +599,7 @@ export default function ServiceTokensPage() {
                       name="diesel_wash"
                       checked={formData.diesel_wash}
                       onChange={handleInputChange}
-                      className="w-4 h-4 text-brand-600 rounded focus:ring-brand-500"
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                     />
                     <span className="text-sm font-medium">Diesel Wash (+₹{formData.vehicle_type ? VEHICLE_TYPES.find(v => v.value === formData.vehicle_type)?.dieselWash || 0 : 0})</span>
                   </label>
@@ -632,7 +609,7 @@ export default function ServiceTokensPage() {
                       key={addon.value}
                       className={`flex items-center gap-2 px-4 py-3 border-2 rounded-lg cursor-pointer transition-all ${
                         formData.addon_services.includes(addon.value)
-                          ? 'border-brand-500 bg-brand-50'
+                          ? 'border-blue-500 bg-blue-50'
                           : 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'
                       }`}
                     >
@@ -640,7 +617,7 @@ export default function ServiceTokensPage() {
                         type="checkbox"
                         checked={formData.addon_services.includes(addon.value)}
                         onChange={() => handleAddonToggle(addon.value)}
-                        className="w-4 h-4 text-brand-600 rounded focus:ring-brand-500"
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                       />
                       <span className="text-sm font-medium">{addon.label} (+₹{addon.price})</span>
                     </label>
@@ -657,7 +634,7 @@ export default function ServiceTokensPage() {
                   name="amount"
                   value={formData.amount}
                   readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 font-semibold text-lg text-brand-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 font-semibold text-lg text-blue-600"
                 />
               </div>
 
@@ -670,7 +647,7 @@ export default function ServiceTokensPage() {
                   value={formData.notes}
                   onChange={handleInputChange}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -685,7 +662,7 @@ export default function ServiceTokensPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
                 >
                   {loading ? 'Creating...' : 'Create & Print Token'}
                 </button>
@@ -729,13 +706,13 @@ export default function ServiceTokensPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
                       Loading...
                     </td>
                   </tr>
                 ) : filteredTokens.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
                       No tokens found
                     </td>
                   </tr>
@@ -743,7 +720,7 @@ export default function ServiceTokensPage() {
                   filteredTokens.map((tokenItem) => (
                     <tr key={tokenItem.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="font-mono font-semibold text-brand-600">
+                        <span className="font-mono font-semibold text-blue-600">
                           {tokenItem.token_number}
                         </span>
                       </td>
@@ -782,7 +759,7 @@ export default function ServiceTokensPage() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => printToken(tokenItem)}
-                            className="text-brand-600 hover:text-blue-900"
+                            className="text-blue-600 hover:text-blue-900"
                             title="Print Token"
                           >
                             <FiPrinter size={18} />

@@ -122,10 +122,10 @@ export default function HelpPage() {
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
       {/* Header */}
       <div className="text-center">
-        <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <HelpCircle className="text-brand-600" size={32} />
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <HelpCircle className="text-blue-600" size={32} />
         </div>
-        <h1 className="text-xl font-bold text-gray-900 font-display">Help & Support</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Help & Support</h1>
         <p className="text-gray-600 mt-2">Find answers, guides, and contact support</p>
       </div>
 
@@ -136,7 +136,7 @@ export default function HelpPage() {
           <input
             type="text"
             placeholder="Search for help..."
-            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent text-gray-900"
+            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -153,10 +153,10 @@ export default function HelpPage() {
           {guides.map((guide, idx) => {
             const Icon = guide.icon;
             return (
-              <div key={idx} className="card p-5 hover:border-brand-200 transition-colors cursor-pointer">
+              <div key={idx} className="card p-5 hover:border-blue-200 transition-colors cursor-pointer">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Icon className="text-brand-600" size={24} />
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Icon className="text-blue-600" size={24} />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">{guide.title}</h3>
@@ -192,7 +192,7 @@ export default function HelpPage() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 selectedCategory === cat
-                  ? 'bg-brand-600 text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -247,7 +247,7 @@ export default function HelpPage() {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-gray-50 rounded-lg text-center">
-            <Phone className="mx-auto text-brand-600 mb-2" size={24} />
+            <Phone className="mx-auto text-blue-600 mb-2" size={24} />
             <p className="font-medium text-gray-900">Phone Support</p>
             <p className="text-sm text-gray-500 mt-1">+91-1234567890</p>
             <p className="text-xs text-gray-400 mt-1">Mon-Sat, 9AM-6PM</p>

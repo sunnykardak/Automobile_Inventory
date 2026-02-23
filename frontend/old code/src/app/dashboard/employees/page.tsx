@@ -174,7 +174,7 @@ export default function EmployeesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 font-display">Employees</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Employees</h1>
           <p className="text-gray-600 mt-1">Manage your team and track performance</p>
         </div>
         <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
@@ -188,10 +188,10 @@ export default function EmployeesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Employees</p>
-              <p className="text-xl font-bold text-gray-900 font-display mt-1">{totalEmployees}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{totalEmployees}</p>
             </div>
-            <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
-              <Users className="text-brand-600" size={24} />
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+              <Users className="text-blue-600" size={24} />
             </div>
           </div>
         </div>
@@ -199,7 +199,7 @@ export default function EmployeesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Active Employees</p>
-              <p className="text-xl font-bold text-gray-900 font-display mt-1">{activeEmployees}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{activeEmployees}</p>
             </div>
             <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
               <CheckCircle className="text-emerald-600" size={24} />
@@ -210,7 +210,7 @@ export default function EmployeesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Pending Commissions</p>
-              <p className="text-xl font-bold text-gray-900 font-display mt-1">₹{totalPendingCommission.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">₹{totalPendingCommission.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
               <Wallet className="text-amber-600" size={24} />
@@ -256,7 +256,7 @@ export default function EmployeesPage() {
                   <tr key={emp.id}>
                     <td>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-brand-800 rounded-full flex items-center justify-center text-white font-semibold">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
                           {emp.first_name[0]}{emp.last_name[0]}
                         </div>
                         <div>
@@ -277,7 +277,7 @@ export default function EmployeesPage() {
                     <td><span className={`badge ${emp.is_active ? 'badge-success' : 'badge-danger'}`}>{emp.is_active ? 'Active' : 'Inactive'}</span></td>
                     <td>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => { setSelectedEmployee(emp); setShowViewModal(true); }} className="p-2 text-gray-600 hover:text-brand-600 hover:bg-brand-50 rounded-lg" title="View"><Eye size={18} /></button>
+                        <button onClick={() => { setSelectedEmployee(emp); setShowViewModal(true); }} className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="View"><Eye size={18} /></button>
                         <button onClick={() => openEditModal(emp)} className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg" title="Edit"><Edit2 size={18} /></button>
                         <button onClick={() => openPaySalaryModal(emp)} className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Pay Salary"><DollarSign size={18} /></button>
                       </div>
@@ -366,7 +366,7 @@ export default function EmployeesPage() {
             </div>
             <div className="modal-body">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-brand-800 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto">
                   {selectedEmployee.first_name[0]}{selectedEmployee.last_name[0]}
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mt-3">{selectedEmployee.first_name} {selectedEmployee.last_name}</h3>

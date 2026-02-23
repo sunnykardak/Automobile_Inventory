@@ -11,6 +11,11 @@ import {
   AlertTriangle,
   DollarSign,
   TrendingUp,
+  ArrowRight,
+  ClipboardList,
+  Package,
+  Wrench,
+  BarChart3,
 } from 'lucide-react';
 
 interface DashboardData {
@@ -71,8 +76,8 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="spinner w-10 h-10 mx-auto"></div>
+          <p className="mt-4 text-gray-500 text-sm">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -92,79 +97,132 @@ export default function DashboardPage() {
       title: 'Total Jobs Today',
       value: overview.totalJobsToday,
       icon: Clipboard,
-      color: 'blue',
+      gradient: 'linear-gradient(135deg, #00b4d8 0%, #0096c7 100%)',
+      shadowColor: 'rgba(4, 201, 171, 0.2)',
+      bgTint: 'rgba(4, 201, 171, 0.06)',
     },
     {
       title: 'Pending Jobs',
       value: overview.pendingJobs,
       icon: AlertTriangle,
-      color: 'yellow',
+      gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      shadowColor: 'rgba(245, 158, 11, 0.2)',
+      bgTint: 'rgba(245, 158, 11, 0.06)',
     },
     {
       title: 'Completed Today',
       value: overview.completedJobsToday,
       icon: CheckCircle,
-      color: 'green',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      shadowColor: 'rgba(16, 185, 129, 0.2)',
+      bgTint: 'rgba(16, 185, 129, 0.06)',
     },
     {
       title: "Today's Revenue",
       value: `₹${overview.todayRevenue.toLocaleString()}`,
       icon: DollarSign,
-      color: 'indigo',
+      gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+      shadowColor: 'rgba(139, 92, 246, 0.2)',
+      bgTint: 'rgba(139, 92, 246, 0.06)',
     },
     {
       title: 'Monthly Revenue',
       value: `₹${overview.monthlyRevenue.toLocaleString()}`,
       icon: TrendingUp,
-      color: 'purple',
+      gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+      shadowColor: 'rgba(59, 130, 246, 0.2)',
+      bgTint: 'rgba(59, 130, 246, 0.06)',
     },
     {
       title: 'Low Stock Alerts',
       value: overview.lowStockItems,
       icon: AlertTriangle,
-      color: 'red',
+      gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+      shadowColor: 'rgba(239, 68, 68, 0.2)',
+      bgTint: 'rgba(239, 68, 68, 0.06)',
     },
   ];
 
-  const colorClasses: any = {
-    blue: 'bg-blue-100 text-blue-600',
-    yellow: 'bg-yellow-100 text-yellow-600',
-    green: 'bg-green-100 text-green-600',
-    indigo: 'bg-indigo-100 text-indigo-600',
-    purple: 'bg-purple-100 text-purple-600',
-    red: 'bg-red-100 text-red-600',
-  };
+  const quickActions = [
+    {
+      label: 'New Job Card',
+      icon: ClipboardList,
+      href: '/dashboard/jobs/create',
+      gradient: 'linear-gradient(135deg, #00b4d8 0%, #0096c7 100%)',
+      shadowColor: 'rgba(4, 201, 171, 0.25)',
+    },
+    {
+      label: 'View Inventory',
+      icon: Package,
+      href: '/dashboard/inventory',
+      gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+      shadowColor: 'rgba(139, 92, 246, 0.25)',
+    },
+    {
+      label: 'Active Jobs',
+      icon: Wrench,
+      href: '/dashboard/jobs',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      shadowColor: 'rgba(16, 185, 129, 0.25)',
+    },
+    {
+      label: 'View Reports',
+      icon: BarChart3,
+      href: '/dashboard/reports',
+      gradient: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+      shadowColor: 'rgba(249, 115, 22, 0.25)',
+    },
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Welcome back! Here's your overview</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 font-display">Dashboard</h1>
+          <p className="text-gray-500 mt-0.5 text-sm">Welcome back! Here's your garage overview</p>
+        </div>
+        <div className="hidden sm:flex items-center gap-2">
+          <span className="text-xs text-gray-400 font-medium">
+            {new Date().toLocaleDateString('en-IN', { 
+              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            })}
+          </span>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Stats Grid - Parkware Style */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <div
               key={index}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+              className="bg-white p-5 rounded-2xl border border-gray-100/80 
+                         transition-all duration-300 hover:shadow-elevated group"
+              style={{
+                animationDelay: `${index * 60}ms`,
+                animationFillMode: 'both',
+              }}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
+              <div className="flex items-start justify-between">
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     {stat.title}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                  <p className="text-3xl font-bold text-gray-900 font-display tracking-tight">
                     {stat.value}
                   </p>
                 </div>
                 <div
-                  className={`p-3 rounded-lg ${colorClasses[stat.color]}`}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
+                             transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    background: stat.gradient,
+                    boxShadow: `0 4px 12px ${stat.shadowColor}`,
+                  }}
                 >
-                  <Icon size={24} />
+                  <Icon size={20} className="text-white" />
                 </div>
               </div>
             </div>
@@ -172,97 +230,138 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Top Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Two Column Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Top Used Parts */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Top Used Spare Parts (Last 30 Days)
-          </h2>
-          <div className="space-y-3">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100/80 shadow-soft">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-base font-bold text-gray-900 font-display">
+              Top Used Spare Parts
+            </h2>
+            <span className="text-xs text-gray-400 font-medium">Last 30 days</span>
+          </div>
+          <div className="space-y-2.5">
             {data?.topUsedParts && data.topUsedParts.length > 0 ? (
               data.topUsedParts.slice(0, 5).map((part, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-3.5 rounded-xl transition-colors"
+                  style={{ background: '#f8fafc' }}
                 >
-                  <div>
-                    <p className="font-medium text-gray-900">{part.name}</p>
-                    <p className="text-sm text-gray-500">{part.manufacturer}</p>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                      style={{
+                        background: 'linear-gradient(135deg, #00b4d8 0%, #0096c7 100%)',
+                        opacity: 1 - index * 0.12,
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 text-sm">{part.name}</p>
+                      <p className="text-xs text-gray-400">{part.manufacturer}</p>
+                    </div>
                   </div>
-                  <span className="text-lg font-semibold text-blue-600">
+                  <span
+                    className="text-sm font-bold px-3 py-1 rounded-lg"
+                    style={{ color: '#00b4d8', background: 'rgba(4, 201, 171, 0.08)' }}
+                  >
                     {part.total_used}
                   </span>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">No data available</p>
+              <div className="text-center py-8">
+                <Package className="mx-auto h-10 w-10 text-gray-300" />
+                <p className="text-gray-400 text-sm mt-3">No data available</p>
+              </div>
             )}
           </div>
         </div>
 
         {/* Top Mechanics */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Top Performing Mechanics (Last 30 Days)
-          </h2>
-          <div className="space-y-3">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100/80 shadow-soft">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-base font-bold text-gray-900 font-display">
+              Top Performing Mechanics
+            </h2>
+            <span className="text-xs text-gray-400 font-medium">Last 30 days</span>
+          </div>
+          <div className="space-y-2.5">
             {data?.topMechanics && data.topMechanics.length > 0 ? (
               data.topMechanics.slice(0, 5).map((mechanic, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-3.5 rounded-xl"
+                  style={{ background: '#f8fafc' }}
                 >
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {mechanic.first_name} {mechanic.last_name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {mechanic.jobs_completed} jobs completed
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        opacity: 1 - index * 0.12,
+                      }}
+                    >
+                      {mechanic.first_name?.[0]}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 text-sm">
+                        {mechanic.first_name} {mechanic.last_name}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {mechanic.jobs_completed} jobs completed
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-sm font-semibold text-green-600">
+                  <span className="text-sm font-bold text-emerald-600">
                     ₹{parseFloat(mechanic.total_commission || 0).toLocaleString()}
                   </span>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">No data available</p>
+              <div className="text-center py-8">
+                <Wrench className="mx-auto h-10 w-10 text-gray-300" />
+                <p className="text-gray-400 text-sm mt-3">No data available</p>
+              </div>
             )}
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-white p-6 rounded-2xl border border-gray-100/80 shadow-soft">
+        <h2 className="text-base font-bold text-gray-900 font-display mb-4">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button
-            onClick={() => router.push('/dashboard/jobs/create')}
-            className="p-4 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-semibold"
-          >
-            + New Job Card
-          </button>
-          <button
-            onClick={() => router.push('/dashboard/inventory')}
-            className="p-4 border-2 border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors font-semibold"
-          >
-            View Inventory
-          </button>
-          <button
-            onClick={() => router.push('/dashboard/jobs')}
-            className="p-4 border-2 border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors font-semibold"
-          >
-            Active Jobs
-          </button>
-          <button
-            onClick={() => router.push('/dashboard/reports')}
-            className="p-4 border-2 border-orange-600 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors font-semibold"
-          >
-            View Reports
-          </button>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.label}
+                onClick={() => router.push(action.href)}
+                className="group p-4 rounded-xl border border-gray-100 
+                           transition-all duration-200 hover:shadow-md hover:-translate-y-0.5
+                           flex flex-col items-center gap-3 text-center"
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center
+                             transition-transform duration-200 group-hover:scale-110"
+                  style={{
+                    background: action.gradient,
+                    boxShadow: `0 4px 12px ${action.shadowColor}`,
+                  }}
+                >
+                  <Icon size={18} className="text-white" />
+                </div>
+                <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900">
+                  {action.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -431,7 +431,7 @@ export default function InventoryPage() {
             <input
               type="text"
               placeholder="Search by name, barcode, brand..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-gray-900"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -441,7 +441,7 @@ export default function InventoryPage() {
           <div className="relative">
             <Filter className="absolute left-3 top-3 text-gray-400" />
             <select
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-gray-900 bg-white"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -459,7 +459,7 @@ export default function InventoryPage() {
             <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                className="w-5 h-5 text-brand-600 rounded focus:ring-brand-500"
+                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
                 checked={showLowStock}
                 onChange={(e) => setShowLowStock(e.target.checked)}
               />
@@ -471,7 +471,7 @@ export default function InventoryPage() {
           <div className="flex justify-end">
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors"
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus /> Add Item
             </button>
@@ -483,7 +483,7 @@ export default function InventoryPage() {
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <p className="mt-2 text-gray-600">Loading inventory...</p>
           </div>
         ) : inventory.length === 0 ? (
@@ -494,7 +494,7 @@ export default function InventoryPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50/80 border-b">
+              <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barcode</th>
@@ -543,7 +543,7 @@ export default function InventoryPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => openEditModal(item)}
-                          className="text-brand-600 hover:text-brand-800"
+                          className="text-blue-600 hover:text-blue-800"
                           title="Edit"
                         >
                           <Edit2 />
@@ -581,7 +581,7 @@ export default function InventoryPage() {
                   </label>
                   <select
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.selectedManufacturer}
                     onChange={(e) => handleManufacturerChange(e.target.value)}
                   >
@@ -602,7 +602,7 @@ export default function InventoryPage() {
                   <select
                     required
                     disabled={!formData.selectedManufacturer}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                     value={formData.selectedModel}
                     onChange={(e) => handleModelChange(e.target.value)}
                   >
@@ -630,7 +630,7 @@ export default function InventoryPage() {
                   <select
                     required
                     disabled={!formData.selectedModel}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                     value={formData.selectedProduct}
                     onChange={(e) => handleProductChange(e.target.value)}
                   >
@@ -655,7 +655,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Barcode/SKU</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.barcode}
                     onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
                     placeholder="Enter or scan barcode"
@@ -671,7 +671,7 @@ export default function InventoryPage() {
                     type="number"
                     required
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.currentQuantity}
                     onChange={(e) => setFormData({ ...formData, currentQuantity: parseInt(e.target.value) })}
                   />
@@ -686,7 +686,7 @@ export default function InventoryPage() {
                     type="number"
                     required
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.minimumStockLevel}
                     onChange={(e) => setFormData({ ...formData, minimumStockLevel: parseInt(e.target.value) })}
                   />
@@ -698,7 +698,7 @@ export default function InventoryPage() {
                   <input
                     type="number"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.maximumStockLevel}
                     onChange={(e) => setFormData({ ...formData, maximumStockLevel: parseInt(e.target.value) })}
                   />
@@ -710,7 +710,7 @@ export default function InventoryPage() {
                   <input
                     type="number"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.reorderPoint}
                     onChange={(e) => setFormData({ ...formData, reorderPoint: parseInt(e.target.value) })}
                   />
@@ -726,7 +726,7 @@ export default function InventoryPage() {
                     step="0.01"
                     required
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.unitPrice}
                     onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) })}
                   />
@@ -742,7 +742,7 @@ export default function InventoryPage() {
                     step="0.01"
                     required
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.sellingPrice}
                     onChange={(e) => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) })}
                   />
@@ -753,7 +753,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Storage Location</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.storageLocation}
                     onChange={(e) => setFormData({ ...formData, storageLocation: e.target.value })}
                     placeholder="e.g., Shelf A1, Bin 23"
@@ -765,7 +765,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.supplierName}
                     onChange={(e) => setFormData({ ...formData, supplierName: e.target.value })}
                     placeholder="Supplier or vendor name"
@@ -775,13 +775,13 @@ export default function InventoryPage() {
 
               {/* Selected Product Info */}
               {formData.selectedProduct && (
-                <div className="mt-4 p-4 bg-brand-50 border border-brand-200 rounded-lg">
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h3 className="text-sm font-semibold text-blue-900 mb-2">Selected Product Details</h3>
                   {(() => {
                     const product = productMaster.find(p => p.id.toString() === formData.selectedProduct);
                     if (product) {
                       return (
-                        <div className="text-sm text-brand-800 space-y-1">
+                        <div className="text-sm text-blue-800 space-y-1">
                           <p><span className="font-medium">Part Number:</span> {product.part_number}</p>
                           <p><span className="font-medium">Category:</span> {product.category_name}</p>
                           {product.description && (
@@ -799,7 +799,7 @@ export default function InventoryPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   type="submit"
-                  className="flex-1 bg-brand-600 text-white py-2 rounded-lg hover:bg-brand-700 transition-colors font-medium"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   Add to Inventory
                 </button>
@@ -830,7 +830,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.brand}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                   />
@@ -839,7 +839,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Stock</label>
                   <input
                     type="number"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.minimumStockLevel}
                     onChange={(e) => setFormData({ ...formData, minimumStockLevel: parseInt(e.target.value) })}
                   />
@@ -848,7 +848,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Stock</label>
                   <input
                     type="number"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.maximumStockLevel}
                     onChange={(e) => setFormData({ ...formData, maximumStockLevel: parseInt(e.target.value) })}
                   />
@@ -857,7 +857,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Point</label>
                   <input
                     type="number"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.reorderPoint}
                     onChange={(e) => setFormData({ ...formData, reorderPoint: parseInt(e.target.value) })}
                   />
@@ -867,7 +867,7 @@ export default function InventoryPage() {
                   <input
                     type="number"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.unitPrice}
                     onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) })}
                   />
@@ -877,7 +877,7 @@ export default function InventoryPage() {
                   <input
                     type="number"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.sellingPrice}
                     onChange={(e) => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) })}
                   />
@@ -886,7 +886,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.storageLocation}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   />
@@ -895,7 +895,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Bin Number</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={formData.supplierName}
                     onChange={(e) => setFormData({ ...formData, bin_number: e.target.value })}
                   />
@@ -904,7 +904,7 @@ export default function InventoryPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   type="submit"
-                  className="flex-1 bg-brand-600 text-white py-2 rounded-lg hover:bg-brand-700"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
                 >
                   Update Item
                 </button>
@@ -938,7 +938,7 @@ export default function InventoryPage() {
                     type="number"
                     required
                     min="1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={restockData.quantity}
                     onChange={(e) => setRestockData({ ...restockData, quantity: parseInt(e.target.value) })}
                   />
@@ -949,7 +949,7 @@ export default function InventoryPage() {
                     type="number"
                     step="0.01"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={restockData.unitPrice}
                     onChange={(e) => setRestockData({ ...restockData, unitPrice: parseFloat(e.target.value) })}
                   />
@@ -958,7 +958,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={restockData.supplierName}
                     onChange={(e) => setRestockData({ ...restockData, supplierName: e.target.value })}
                   />
@@ -967,7 +967,7 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={restockData.invoiceNumber}
                     onChange={(e) => setRestockData({ ...restockData, invoiceNumber: e.target.value })}
                   />
@@ -976,12 +976,12 @@ export default function InventoryPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                   <textarea
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     value={restockData.notes}
                     onChange={(e) => setRestockData({ ...restockData, notes: e.target.value })}
                   />
                 </div>
-                <div className="bg-brand-50 p-3 rounded-lg">
+                <div className="bg-blue-50 p-3 rounded-lg">
                   <p className="text-sm text-gray-700">
                     New Stock: <span className="font-bold">{(selectedItem.current_quantity || 0) + (restockData.quantity || 0)}</span>
                   </p>

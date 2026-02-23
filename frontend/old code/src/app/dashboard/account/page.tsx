@@ -102,14 +102,14 @@ export default function AccountPage() {
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-gray-900 font-display">My Account</h1>
+        <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
         <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
       </div>
 
       {/* Profile Card */}
       <div className="card p-6">
         <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-brand-800 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
             {user?.first_name?.[0] || user?.username?.[0] || 'U'}
           </div>
           <div>
@@ -137,7 +137,7 @@ export default function AccountPage() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === tab.id
-                      ? 'border-brand-600 text-brand-600'
+                      ? 'border-blue-600 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -154,7 +154,7 @@ export default function AccountPage() {
           {activeTab === 'profile' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-base font-bold text-gray-900 font-display mb-4">Profile Information</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-1">
                     <label className="text-sm text-gray-500">Username</label>
@@ -188,7 +188,7 @@ export default function AccountPage() {
               </div>
 
               <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-base font-bold text-gray-900 font-display mb-4">Account Permissions</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Permissions</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {['Dashboard', 'Jobs', 'Inventory', 'Employees', 'Reports', 'Billing'].map((perm) => (
                     <div key={perm} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
@@ -205,7 +205,7 @@ export default function AccountPage() {
           {activeTab === 'security' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-base font-bold text-gray-900 font-display mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Key size={20} />
                   Change Password
                 </h3>
@@ -293,7 +293,7 @@ export default function AccountPage() {
               </div>
 
               <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-base font-bold text-gray-900 font-display mb-4">Security Settings</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Security Settings</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
@@ -317,7 +317,7 @@ export default function AccountPage() {
           {/* Activity Tab */}
           {activeTab === 'activity' && (
             <div className="space-y-6">
-              <h3 className="text-base font-bold text-gray-900 font-display mb-4">Recent Activity</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
               <div className="space-y-4">
                 {[
                   { action: 'Logged in', time: 'Just now', icon: CheckCircle, color: 'text-emerald-500' },

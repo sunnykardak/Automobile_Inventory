@@ -23,10 +23,10 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#f0f4f8' }}>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="spinner w-10 h-10 mx-auto"></div>
-          <p className="mt-4 text-gray-500 text-sm font-medium">Loading...</p>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -37,7 +37,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#f0f4f8' }}>
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 

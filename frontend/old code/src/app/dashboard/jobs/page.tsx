@@ -69,10 +69,10 @@ interface VehicleModel {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  'Created': 'bg-sky-50 text-sky-700',
-  'In Progress': 'bg-amber-50 text-amber-700',
-  'Washing': 'bg-cyan-50 text-cyan-700',
-  'Completed': 'bg-emerald-50 text-emerald-700',
+  'Created': 'bg-blue-100 text-blue-800',
+  'In Progress': 'bg-yellow-100 text-yellow-800',
+  'Washing': 'bg-cyan-100 text-cyan-800',
+  'Completed': 'bg-green-100 text-green-800',
 };
 
 const STATUS_OPTIONS = ['Created', 'In Progress', 'Washing', 'Completed'];
@@ -422,7 +422,7 @@ export default function JobsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 font-display">Tasks / Jobs</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Tasks / Jobs</h1>
           <p className="text-gray-600 mt-1">Manage job cards and track service progress</p>
         </div>
         <button onClick={() => setShowCreateModal(true)} className="btn-primary flex items-center gap-2">
@@ -436,8 +436,8 @@ export default function JobsPage() {
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-              statusFilter === status ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              statusFilter === status ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
             {status} ({statusCounts[status] || 0})
@@ -486,7 +486,7 @@ export default function JobsPage() {
               <tbody>
                 {filteredJobs.map((job) => (
                   <tr key={job.id}>
-                    <td><span className="font-mono font-medium text-brand-600">{job.job_number}</span></td>
+                    <td><span className="font-mono font-medium text-blue-600">{job.job_number}</span></td>
                     <td>
                       <div>
                         <p className="font-medium text-gray-900">{job.customer_name}</p>
@@ -505,7 +505,7 @@ export default function JobsPage() {
                     <td>
                       <button
                         onClick={() => { fetchJobDetails(job.id); setShowViewModal(true); }}
-                        className="p-2 text-brand-600 hover:bg-brand-50 rounded-lg"
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                         title="View Details"
                       >
                         <Eye size={18} />
@@ -590,7 +590,7 @@ export default function JobsPage() {
                   </label>
 
                   {formData.includeWashing && (
-                    <div className="bg-brand-50 p-4 rounded-lg space-y-3">
+                    <div className="bg-blue-50 p-4 rounded-lg space-y-3">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="label">Vehicle Category *</label>
@@ -621,7 +621,7 @@ export default function JobsPage() {
                       <div className="space-y-2">
                         <label className="font-medium text-sm">Add-ons</label>
                         <div className="grid grid-cols-3 gap-3">
-                          <label className={`p-2 border-2 rounded-lg cursor-pointer transition ${formData.washingDieselWash ? 'border-brand-500 bg-brand-100' : 'border-gray-300'}`}>
+                          <label className={`p-2 border-2 rounded-lg cursor-pointer transition ${formData.washingDieselWash ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}>
                             <input
                               type="checkbox"
                               checked={formData.washingDieselWash}
@@ -633,7 +633,7 @@ export default function JobsPage() {
                           {WASHING_ADDON_SERVICES.map(addon => (
                             <label
                               key={addon.value}
-                              className={`p-2 border-2 rounded-lg cursor-pointer transition ${formData.washingAddons.includes(addon.value) ? 'border-brand-500 bg-brand-100' : 'border-gray-300'}`}
+                              className={`p-2 border-2 rounded-lg cursor-pointer transition ${formData.washingAddons.includes(addon.value) ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
                             >
                               <input
                                 type="checkbox"
@@ -647,10 +647,10 @@ export default function JobsPage() {
                         </div>
                       </div>
 
-                      <div className="bg-white p-3 rounded border border-brand-200">
+                      <div className="bg-white p-3 rounded border border-blue-200">
                         <div className="flex justify-between items-center">
                           <span className="font-semibold">Washing Charges:</span>
-                          <span className="text-lg font-bold text-brand-600">₹{formData.washingCharges}</span>
+                          <span className="text-lg font-bold text-blue-600">₹{formData.washingCharges}</span>
                         </div>
                       </div>
                     </div>
@@ -672,7 +672,7 @@ export default function JobsPage() {
           <div className="modal-content max-w-4xl" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Job: <span className="text-brand-600 font-mono">{selectedJob.job_number}</span></h2>
+                <h2 className="text-xl font-bold text-gray-900">Job: <span className="text-blue-600 font-mono">{selectedJob.job_number}</span></h2>
                 <span className={`badge mt-1 ${STATUS_COLORS[selectedJob.status]}`}>{selectedJob.status}</span>
               </div>
               <button onClick={() => { setShowViewModal(false); setSelectedJob(null); }} className="text-gray-500 hover:text-gray-700"><X size={24} /></button>
@@ -699,7 +699,7 @@ export default function JobsPage() {
                     <p className="mt-2"><span className="text-gray-500">Mechanic:</span> {selectedJob.mechanic_name || 'Not assigned'}</p>
                   </div>
                   {selectedJob.status !== 'Completed' && (
-                    <div className="bg-brand-50 p-4 rounded-lg">
+                    <div className="bg-blue-50 p-4 rounded-lg">
                       <h3 className="font-semibold text-gray-900 mb-2">Update Status</h3>
                       <div className="flex flex-wrap gap-2">
                         {STATUS_OPTIONS.filter(s => s !== selectedJob.status).map(status => (
@@ -774,7 +774,7 @@ export default function JobsPage() {
                   {selectedJob.status === 'Completed' && selectedJob.bill_id && (
                     <button 
                       onClick={() => handleDownloadPDF(selectedJob.bill_id!)} 
-                      className="w-full gradient-brand text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:from-brand-700 hover:to-brand-900 transition-all shadow-lg shadow-brand-500/30"
+                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/30"
                     >
                       <Download size={20} /> Download Invoice PDF
                     </button>
@@ -798,7 +798,7 @@ export default function JobsPage() {
               <div className="modal-body space-y-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-sm text-gray-600">Job Number</p>
-                  <p className="font-mono font-bold text-brand-600">{selectedJob.job_number}</p>
+                  <p className="font-mono font-bold text-blue-600">{selectedJob.job_number}</p>
                 </div>
                 
                 <div className="space-y-2 text-sm">

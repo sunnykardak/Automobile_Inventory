@@ -228,7 +228,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 font-display">Reports & Analysis</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Reports & Analysis</h1>
           <p className="text-gray-600 mt-1">Comprehensive business insights and analytics</p>
         </div>
         <button
@@ -305,8 +305,8 @@ export default function ReportsPage() {
         
         <div className="card p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center">
-              <Wrench className="text-brand-600" size={20} />
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Wrench className="text-blue-600" size={20} />
             </div>
             <div>
               <p className="text-xs text-gray-500">Total Jobs</p>
@@ -456,7 +456,7 @@ export default function ReportsPage() {
         <div className="card">
           <div className="card-header flex items-center justify-between">
             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-              <Users size={20} className="text-brand-600" />
+              <Users size={20} className="text-blue-600" />
               Employee Performance
             </h3>
             <button
@@ -477,7 +477,7 @@ export default function ReportsPage() {
                 {employeePerformance.slice(0, 8).map((emp, idx) => (
                   <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-brand-800 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                         {emp.employee_name?.split(' ').map(n => n[0]).join('') || '?'}
                       </div>
                       <div>
