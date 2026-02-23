@@ -99,3 +99,5 @@
 {"level":"info","message":"Job card created: JOB-00003 by admin","service":"automobile-inventory-api","timestamp":"2026-02-24 01:14:21"}
 {"level":"info","message":"Job card updated: JOB-00003","service":"automobile-inventory-api","timestamp":"2026-02-24 01:14:30"}
 {"level":"info","message":"Job card updated: JOB-00003","service":"automobile-inventory-api","timestamp":"2026-02-24 01:14:32"}
+{"level":"info","message":"Job card updated: JOB-00003","service":"automobile-inventory-api","timestamp":"2026-02-24 01:21:30"}
+{"level":"info","message":"Job card updated: JOB-00003","service":"automobile-inventory-api","timestamp":"2026-02-24 01:21:33"}

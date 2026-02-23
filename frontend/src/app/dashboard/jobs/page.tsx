@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Plus, Search, Eye, CheckCircle, Droplets, Wrench, Package,
-  Trash2, X, Car, User, AlertCircle, DollarSign, Download,
+  Trash2, X, Car, User, AlertCircle, DollarSign, Download, FileText,
 } from 'lucide-react';
 
 interface JobCard {
@@ -521,16 +521,48 @@ export default function JobsPage() {
                       </div>
                     </td>
                     <td>{job.mechanic_name || <span className="text-gray-400">Unassigned</span>}</td>
-                    <td><span className={`badge ${STATUS_COLORS[job.status]}`}>{job.status}</span></td>
+                    <td>
+                      <select
+                        value={job.status}
+                        onChange={(e) => handleUpdateStatus(job.id, e.target.value)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium border-0 cursor-pointer ${STATUS_COLORS[job.status]} focus:ring-2 focus:ring-brand-500`}
+                      >
+                        {STATUS_OPTIONS.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
                     <td className="text-gray-500">{new Date(job.created_at).toLocaleDateString()}</td>
                     <td>
-                      <button
-                        onClick={() => { fetchJobDetails(job.id); setShowViewModal(true); }}
-                        className="p-2 text-brand-600 hover:bg-brand-50 rounded-lg"
-                        title="View Details"
-                      >
-                        <Eye size={18} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => { fetchJobDetails(job.id); setShowViewModal(true); }}
+                          className="p-2 text-brand-600 hover:bg-brand-50 rounded-lg"
+                          title="View Details"
+                        >
+                          <Eye size={18} />
+                        </button>
+                        {job.status === 'Completed' && job.bill_id && (
+                          <button
+                            onClick={() => handleDownloadPDF(job.bill_id!)}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                            title="Download Invoice"
+                          >
+                            <FileText size={18} />
+                          </button>
+                        )}
+                        {job.status === 'Completed' && !job.bill_id && (
+                          <button
+                            onClick={() => { fetchJobDetails(job.id); setShowViewModal(true); setShowCompleteModal(true); }}
+                            className="px-3 py-1.5 text-xs bg-green-600 text-white hover:bg-green-700 rounded-lg font-medium"
+                            title="Generate Invoice"
+                          >
+                            Generate Invoice
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
