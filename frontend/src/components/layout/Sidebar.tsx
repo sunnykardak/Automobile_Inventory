@@ -15,7 +15,7 @@ interface SidebarProps {
 
 const menuItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Tasks / Jobs', href: '/dashboard/jobs', icon: ClipboardList },
+  { name: 'Job Cards', href: '/dashboard/jobs', icon: ClipboardList },
   { name: 'Service Tokens', href: '/dashboard/tokens', icon: Ticket },
   { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
