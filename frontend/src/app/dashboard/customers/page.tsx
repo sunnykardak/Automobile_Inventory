@@ -306,95 +306,139 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      {/* Customer Cards */}
+      {/* Customer List */}
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="spinner w-12 h-12"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCustomers.map((customer) => (
-            <div
-              key={customer.id}
-              className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                    {customer.customer_name[0]}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{customer.customer_name}</h3>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      customer.customer_type === 'Business' 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {customer.customer_type}
-                    </span>
-                  </div>
-                </div>
-                {customer.is_active && (
-                  <CheckCircle size={20} className="text-green-500" />
-                )}
-              </div>
-
-              <div className="space-y-2 text-sm text-gray-600 mb-4">
-                <div className="flex items-center gap-2">
-                  <Phone size={16} />
-                  <span>{customer.phone}</span>
-                </div>
-                {customer.email && (
-                  <div className="flex items-center gap-2">
-                    <Mail size={16} />
-                    <span className="truncate">{customer.email}</span>
-                  </div>
-                )}
-                {customer.city && (
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} />
-                    <span>{customer.city}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mb-4 text-center">
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <div className="text-xs text-gray-500">Vehicles</div>
-                  <div className="font-bold text-gray-900">{customer.vehicle_count || 0}</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <div className="text-xs text-gray-500">Jobs</div>
-                  <div className="font-bold text-gray-900">{customer.job_count || 0}</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <div className="text-xs text-gray-500">Spent</div>
-                  <div className="font-bold text-gray-900">₹{Math.round(customer.total_spent || 0)}</div>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => openViewModal(customer)}
-                  className="flex-1 btn-secondary flex items-center justify-center gap-2"
-                >
-                  <Eye size={16} /> View
-                </button>
-                <button
-                  onClick={() => openEditModal(customer)}
-                  className="flex-1 btn-primary flex items-center justify-center gap-2"
-                >
-                  <Edit size={16} /> Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteCustomer(customer.id)}
-                  className="px-3 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          ))}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Vehicles
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Jobs
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Total Spent
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredCustomers.map((customer) => (
+                  <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                          {customer.customer_name[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 truncate">{customer.customer_name}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm">
+                        <div className="flex items-center gap-2 text-gray-900">
+                          <Phone size={14} className="text-gray-400 flex-shrink-0" />
+                          <span>{customer.phone}</span>
+                        </div>
+                        {customer.email && (
+                          <div className="flex items-center gap-2 text-gray-600 mt-1">
+                            <Mail size={14} className="text-gray-400 flex-shrink-0" />
+                            <span className="truncate max-w-[200px]">{customer.email}</span>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {customer.city && (
+                          <div className="flex items-center gap-2">
+                            <MapPin size={14} className="text-gray-400 flex-shrink-0" />
+                            <span>{customer.city}</span>
+                          </div>
+                        )}
+                        {!customer.city && <span className="text-gray-400">—</span>}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
+                        customer.customer_type === 'Business' 
+                          ? 'bg-purple-100 text-purple-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {customer.customer_type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className="text-sm font-semibold text-gray-900">{customer.vehicle_count || 0}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className="text-sm font-semibold text-gray-900">{customer.job_count || 0}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className="text-sm font-semibold text-gray-900">₹{Math.round(customer.total_spent || 0)}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {customer.is_active ? (
+                        <CheckCircle size={20} className="text-green-500 inline-block" />
+                      ) : (
+                        <span className="text-gray-400">Inactive</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openViewModal(customer)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="View Details"
+                        >
+                          <Eye size={18} />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(customer)}
+                          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="Edit Customer"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCustomer(customer.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Customer"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
