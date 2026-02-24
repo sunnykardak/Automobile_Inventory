@@ -53,7 +53,9 @@ export default function CustomersPage() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const [showEditVehicleModal, setShowEditVehicleModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
   const [formData, setFormData] = useState({
     customerName: '',
@@ -206,6 +208,47 @@ export default function CustomersPage() {
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to delete vehicle');
     }
+  };
+
+  const handleUpdateVehicle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCustomer || !selectedVehicle) return;
+    try {
+      const response = await axios.put(
+        `${API_URL}/customers/${selectedCustomer.id}/vehicles/${selectedVehicle.id}`,
+        {
+          ...vehicleForm,
+          registrationDate: vehicleForm.registrationDate || null,
+          insuranceExpiry: vehicleForm.insuranceExpiry || null,
+        },
+        getAuthHeader()
+      );
+      if (response.data.success) {
+        toast.success('Vehicle updated successfully');
+        setShowEditVehicleModal(false);
+        resetVehicleForm();
+        setSelectedVehicle(null);
+        fetchCustomerDetails(selectedCustomer.id);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update vehicle');
+    }
+  };
+
+  const openEditVehicleModal = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setVehicleForm({
+      vehicleNumber: vehicle.vehicle_number,
+      vehicleType: vehicle.vehicle_type,
+      vehicleBrand: vehicle.vehicle_brand || '',
+      vehicleModel: vehicle.vehicle_model || '',
+      vehicleYear: vehicle.vehicle_year || new Date().getFullYear(),
+      vinNumber: vehicle.vin_number || '',
+      registrationDate: vehicle.registration_date ? vehicle.registration_date.split('T')[0] : '',
+      insuranceExpiry: vehicle.insurance_expiry ? vehicle.insurance_expiry.split('T')[0] : '',
+      notes: vehicle.notes || '',
+    });
+    setShowEditVehicleModal(true);
   };
 
   const openEditModal = (customer: Customer) => {
@@ -688,12 +731,22 @@ export default function CustomersPage() {
                                 <p className="text-sm text-gray-600">{vehicle.vehicle_brand} {vehicle.vehicle_model}</p>
                               </div>
                             </div>
-                            <button
-                              onClick={() => handleDeleteVehicle(vehicle.id)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => openEditVehicleModal(vehicle)}
+                                className="text-brand-600 hover:text-brand-700"
+                                title="Edit vehicle"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteVehicle(vehicle.id)}
+                                className="text-red-500 hover:text-red-700"
+                                title="Delete vehicle"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </div>
                           <div className="text-xs text-gray-500">
                             <span className="mr-3">{vehicle.vehicle_type}</span>
@@ -734,6 +787,128 @@ export default function CustomersPage() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Vehicle Modal */}
+      {showEditVehicleModal && (
+        <div className="modal-overlay" onClick={() => { setShowEditVehicleModal(false); resetVehicleForm(); setSelectedVehicle(null); }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="text-xl font-bold text-gray-900">Edit Vehicle</h2>
+              <button onClick={() => { setShowEditVehicleModal(false); resetVehicleForm(); setSelectedVehicle(null); }}>
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateVehicle}>
+              <div className="modal-body space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="label">Vehicle Number *</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={vehicleForm.vehicleNumber}
+                      onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleNumber: e.target.value.toUpperCase() })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Vehicle Type *</label>
+                    <select
+                      className="select"
+                      value={vehicleForm.vehicleType}
+                      onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleType: e.target.value })}
+                    >
+                      <option>Bike</option>
+                      <option>Car</option>
+                      <option>SUV</option>
+                      <option>Truck</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="label">Brand</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={vehicleForm.vehicleBrand}
+                      onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleBrand: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Model</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={vehicleForm.vehicleModel}
+                      onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleModel: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Year</label>
+                    <input
+                      type="number"
+                      className="input"
+                      value={vehicleForm.vehicleYear}
+                      onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleYear: parseInt(e.target.value) })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label">VIN Number</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={vehicleForm.vinNumber}
+                    onChange={(e) => setVehicleForm({ ...vehicleForm, vinNumber: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="label">Registration Date</label>
+                    <input
+                      type="date"
+                      className="input"
+                      value={vehicleForm.registrationDate}
+                      onChange={(e) => setVehicleForm({ ...vehicleForm, registrationDate: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Insurance Expiry</label>
+                    <input
+                      type="date"
+                      className="input"
+                      value={vehicleForm.insuranceExpiry}
+                      onChange={(e) => setVehicleForm({ ...vehicleForm, insuranceExpiry: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label">Notes</label>
+                  <textarea
+                    className="input"
+                    rows={2}
+                    value={vehicleForm.notes}
+                    onChange={(e) => setVehicleForm({ ...vehicleForm, notes: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" onClick={() => { setShowEditVehicleModal(false); resetVehicleForm(); setSelectedVehicle(null); }} className="btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  Update Vehicle
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
