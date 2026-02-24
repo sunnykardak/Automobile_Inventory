@@ -331,6 +331,48 @@ router.delete('/:id/vehicles/:vehicleId', authorize('Admin', 'Owner'), async (re
   }
 });
 
+// Search vehicles by number or customer (MUST be before :vehicleNumber route)
+router.get('/search-vehicles', async (req, res) => {
+  try {
+    const { search } = req.query;
+    
+    if (!search || search.length < 2) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Search query must be at least 2 characters' 
+      });
+    }
+    
+    const result = await query(
+      `SELECT 
+        cv.*,
+        c.customer_name,
+        c.phone,
+        c.email,
+        COUNT(jc.id) as service_count,
+        MAX(jc.created_at) as last_service_date
+       FROM customer_vehicles cv
+       JOIN customers c ON cv.customer_id = c.id
+       LEFT JOIN job_cards jc ON cv.vehicle_number = jc.vehicle_number
+       WHERE cv.vehicle_number ILIKE $1
+          OR c.customer_name ILIKE $1
+          OR c.phone ILIKE $1
+       GROUP BY cv.id, c.customer_name, c.phone, c.email
+       ORDER BY last_service_date DESC NULLS LAST
+       LIMIT 10`,
+      [`%${search}%`]
+    );
+    
+    res.json({
+      success: true,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Search vehicles error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Get complete vehicle history by vehicle number
 router.get('/vehicle-history/:vehicleNumber', async (req, res) => {
   try {
@@ -467,48 +509,6 @@ router.get('/vehicle-history/:vehicleNumber', async (req, res) => {
     });
   } catch (error) {
     console.error('Get vehicle history error:', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Search vehicles by number or customer
-router.get('/search-vehicles', async (req, res) => {
-  try {
-    const { search } = req.query;
-    
-    if (!search || search.length < 2) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Search query must be at least 2 characters' 
-      });
-    }
-    
-    const result = await query(
-      `SELECT 
-        cv.*,
-        c.customer_name,
-        c.phone,
-        c.email,
-        COUNT(jc.id) as service_count,
-        MAX(jc.created_at) as last_service_date
-       FROM customer_vehicles cv
-       JOIN customers c ON cv.customer_id = c.id
-       LEFT JOIN job_cards jc ON cv.vehicle_number = jc.vehicle_number
-       WHERE cv.vehicle_number ILIKE $1
-          OR c.customer_name ILIKE $1
-          OR c.phone ILIKE $1
-       GROUP BY cv.id, c.customer_name, c.phone, c.email
-       ORDER BY last_service_date DESC NULLS LAST
-       LIMIT 10`,
-      [`%${search}%`]
-    );
-    
-    res.json({
-      success: true,
-      data: result.rows,
-    });
-  } catch (error) {
-    console.error('Search vehicles error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

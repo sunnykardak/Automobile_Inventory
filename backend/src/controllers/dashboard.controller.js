@@ -34,9 +34,9 @@ exports.getDashboard = async (req, res) => {
        FROM bills WHERE DATE(created_at) = $1
        UNION ALL
        SELECT 
-        COALESCE(SUM(amount), 0) as revenue 
+        COALESCE(SUM(service_price), 0) as revenue 
        FROM service_tokens 
-       WHERE DATE(completed_at) = $1 AND status = 'completed'`,
+       WHERE DATE(completed_at) = $1 AND status = 'Completed'`,
       [today]
     );
     
@@ -51,11 +51,11 @@ exports.getDashboard = async (req, res) => {
        AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
        UNION ALL
        SELECT 
-        COALESCE(SUM(amount), 0) as revenue 
+        COALESCE(SUM(service_price), 0) as revenue 
        FROM service_tokens 
        WHERE EXTRACT(MONTH FROM completed_at) = EXTRACT(MONTH FROM CURRENT_DATE)
        AND EXTRACT(YEAR FROM completed_at) = EXTRACT(YEAR FROM CURRENT_DATE)
-       AND status = 'completed'`
+       AND status = 'Completed'`
     );
     
     const monthlyRevenue = monthlyRevenueResult.rows.reduce((sum, row) => sum + parseFloat(row.revenue), 0);
@@ -69,7 +69,7 @@ exports.getDashboard = async (req, res) => {
     // Completed service tokens today
     const completedTokensTodayResult = await query(
       `SELECT COUNT(*) as count FROM service_tokens 
-       WHERE DATE(completed_at) = $1 AND status = 'completed'`,
+       WHERE DATE(completed_at) = $1 AND status = 'Completed'`,
       [today]
     );
     
@@ -122,10 +122,10 @@ exports.getDashboard = async (req, res) => {
       ),
       daily_tokens AS (
         SELECT DATE(completed_at) as date,
-               COALESCE(SUM(amount), 0) as revenue
+               COALESCE(SUM(service_price), 0) as revenue
         FROM service_tokens
         WHERE DATE(completed_at) >= CURRENT_DATE - INTERVAL '6 days'
-        AND status = 'completed'
+        AND status = 'Completed'
         GROUP BY DATE(completed_at)
       ),
       all_dates AS (
@@ -203,11 +203,11 @@ exports.getRevenueChart = async (req, res) => {
         SELECT 
           TO_CHAR(completed_at, 'Mon YYYY') as month,
           DATE_TRUNC('month', completed_at) as month_date,
-          COALESCE(SUM(amount), 0) as revenue,
+          COALESCE(SUM(service_price), 0) as revenue,
           COUNT(DISTINCT id) as token_count
         FROM service_tokens
         WHERE completed_at >= CURRENT_DATE - INTERVAL '${parseInt(months)} months'
-        AND status = 'completed'
+        AND status = 'Completed'
         GROUP BY TO_CHAR(completed_at, 'Mon YYYY'), DATE_TRUNC('month', completed_at)
       )
       SELECT 

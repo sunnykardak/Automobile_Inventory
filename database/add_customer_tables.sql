@@ -3,8 +3,8 @@
 -- =========================================
 
 -- Drop existing tables if they exist
+-- NOTE: DO NOT drop service_tokens here - it's managed separately
 DROP TABLE IF EXISTS customer_vehicles CASCADE;
-DROP TABLE IF EXISTS service_tokens CASCADE;
 DROP TABLE IF EXISTS customers CASCADE;
 
 -- =========================================
@@ -81,42 +81,6 @@ CREATE TRIGGER customer_vehicles_update_timestamp
     EXECUTE FUNCTION update_customer_timestamp();
 
 -- =========================================
--- SERVICE TOKENS TABLE (Recreate with FK)
--- =========================================
-CREATE TABLE service_tokens (
-    id SERIAL PRIMARY KEY,
-    token_number VARCHAR(50) UNIQUE NOT NULL,
-    customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
-    customer_name VARCHAR(255) NOT NULL,
-    customer_phone VARCHAR(20) NOT NULL,
-    vehicle_number VARCHAR(50) NOT NULL,
-    vehicle_type VARCHAR(50) NOT NULL CHECK (vehicle_type IN ('Bike', 'Car', 'Other')),
-    vehicle_brand VARCHAR(100),
-    vehicle_model VARCHAR(100),
-    service_type VARCHAR(100) NOT NULL,
-    estimated_time VARCHAR(50),
-    status VARCHAR(50) DEFAULT 'Pending' CHECK (status IN ('Pending', 'In Progress', 'Completed', 'Delivered', 'Cancelled')),
-    priority VARCHAR(20) DEFAULT 'Normal' CHECK (priority IN ('Low', 'Normal', 'High', 'Urgent')),
-    service_price DECIMAL(10,2) DEFAULT 0.00,
-    payment_method VARCHAR(50),
-    notes TEXT,
-    created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    completed_at TIMESTAMP,
-    delivered_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_service_tokens_customer ON service_tokens(customer_phone);
-CREATE INDEX idx_service_tokens_vehicle ON service_tokens(vehicle_number);
-CREATE INDEX idx_service_tokens_status ON service_tokens(status);
-
-CREATE TRIGGER service_tokens_update_timestamp
-    BEFORE UPDATE ON service_tokens
-    FOR EACH ROW
-    EXECUTE FUNCTION update_customer_timestamp();
-
--- =========================================
 -- POPULATE CUSTOMERS FROM EXISTING DATA
 -- =========================================
 -- Insert unique customers from job_cards
@@ -127,16 +91,6 @@ SELECT DISTINCT ON (customer_phone)
     customer_email
 FROM job_cards
 WHERE customer_phone IS NOT NULL
-ON CONFLICT (phone) DO NOTHING;
-
--- Insert unique customers from service_tokens (if table exists with data)
-INSERT INTO customers (customer_name, phone)
-SELECT DISTINCT ON (customer_phone)
-    customer_name,
-    customer_phone
-FROM service_tokens
-WHERE customer_phone IS NOT NULL 
-  AND customer_phone NOT IN (SELECT phone FROM customers)
 ON CONFLICT (phone) DO NOTHING;
 
 -- =========================================
