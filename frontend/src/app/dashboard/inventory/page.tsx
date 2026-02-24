@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -72,6 +73,7 @@ interface VehicleModel {
 
 export default function InventoryPage() {
   const { token } = useAuth();
+  const searchParams = useSearchParams();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
@@ -114,6 +116,15 @@ export default function InventoryPage() {
     invoiceNumber: '',
     notes: '',
   });
+
+  // Read URL parameters
+  useEffect(() => {
+    const lowStock = searchParams.get('lowStock');
+    
+    if (lowStock === 'true') {
+      setShowLowStock(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (token) {

@@ -109,6 +109,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #00b4d8 0%, #0096c7 100%)',
       shadowColor: 'rgba(4, 201, 171, 0.2)',
       bgTint: 'rgba(4, 201, 171, 0.06)',
+      href: '/dashboard/jobs',
     },
     {
       title: 'Service Tokens Today',
@@ -117,6 +118,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
       shadowColor: 'rgba(6, 182, 212, 0.2)',
       bgTint: 'rgba(6, 182, 212, 0.06)',
+      href: '/dashboard/tokens',
     },
     {
       title: 'Pending Jobs',
@@ -125,6 +127,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
       shadowColor: 'rgba(245, 158, 11, 0.2)',
       bgTint: 'rgba(245, 158, 11, 0.06)',
+      href: '/dashboard/jobs?status=In Progress',
     },
     {
       title: 'Completed Today',
@@ -133,6 +136,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
       shadowColor: 'rgba(16, 185, 129, 0.2)',
       bgTint: 'rgba(16, 185, 129, 0.06)',
+      href: '/dashboard/jobs?status=Completed',
     },
     {
       title: 'Tokens Completed',
@@ -141,6 +145,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
       shadowColor: 'rgba(20, 184, 166, 0.2)',
       bgTint: 'rgba(20, 184, 166, 0.06)',
+      href: '/dashboard/tokens?status=completed',
     },
     {
       title: "Today's Revenue",
@@ -150,6 +155,7 @@ export default function DashboardPage() {
       shadowColor: 'rgba(139, 92, 246, 0.2)',
       bgTint: 'rgba(139, 92, 246, 0.06)',
       subtitle: 'Jobs + Tokens',
+      href: '/dashboard/reports',
     },
     {
       title: 'Monthly Revenue',
@@ -159,6 +165,7 @@ export default function DashboardPage() {
       shadowColor: 'rgba(59, 130, 246, 0.2)',
       bgTint: 'rgba(59, 130, 246, 0.06)',
       subtitle: 'Jobs + Tokens',
+      href: '/dashboard/reports',
     },
     {
       title: 'Low Stock Alerts',
@@ -167,6 +174,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
       shadowColor: 'rgba(239, 68, 68, 0.2)',
       bgTint: 'rgba(239, 68, 68, 0.06)',
+      href: '/dashboard/inventory?lowStock=true',
     },
   ];
 
@@ -174,7 +182,7 @@ export default function DashboardPage() {
     {
       label: 'New Job Card',
       icon: ClipboardList,
-      href: '/dashboard/jobs/create',
+      href: '/dashboard/jobs?create=true',
       gradient: 'linear-gradient(135deg, #00b4d8 0%, #0096c7 100%)',
       shadowColor: 'rgba(4, 201, 171, 0.25)',
     },
@@ -246,6 +254,7 @@ export default function DashboardPage() {
           return (
             <div
               key={index}
+              onClick={() => stat.href && router.push(stat.href)}
               className="bg-white p-6 rounded-2xl border border-gray-100/80 
                          transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:border-gray-200
                          hover:-translate-y-1 group cursor-pointer relative overflow-hidden"

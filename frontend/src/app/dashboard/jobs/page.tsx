@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -97,6 +98,7 @@ const WASHING_ADDON_SERVICES = [
 
 export default function JobsPage() {
   const { token } = useAuth();
+  const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<JobCard[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -132,6 +134,20 @@ export default function JobsPage() {
 
   const getAuthHeader = () => ({ headers: { Authorization: `Bearer ${token}` } });
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
+
+  // Read URL parameters
+  useEffect(() => {
+    const status = searchParams.get('status');
+    const create = searchParams.get('create');
+    
+    if (status) {
+      setStatusFilter(status);
+    }
+    
+    if (create === 'true') {
+      setShowCreateModal(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (token) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -48,6 +49,7 @@ interface Stats {
 
 export default function ServiceTokensPage() {
   const { token } = useAuth();
+  const searchParams = useSearchParams();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [filteredTokens, setFilteredTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(false);
@@ -69,6 +71,15 @@ export default function ServiceTokensPage() {
     amount: 0,
     notes: ''
   });
+
+  // Read URL parameters
+  useEffect(() => {
+    const status = searchParams.get('status');
+    
+    if (status) {
+      setStatusFilter(status);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchTokens();
