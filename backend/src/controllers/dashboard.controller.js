@@ -81,15 +81,15 @@ exports.getDashboard = async (req, res) => {
     
     // Top used spare parts (last 30 days)
     const topPartsResult = await query(
-      `SELECT i.barcode, pm.name, m.name as manufacturer, 
+      `SELECT pm.name, COALESCE(m.name, i.brand) as manufacturer, 
               SUM(jp.quantity) as total_used
        FROM job_products jp
        JOIN inventory i ON jp.inventory_id = i.id
        JOIN product_master pm ON i.product_master_id = pm.id
        LEFT JOIN manufacturers m ON pm.manufacturer_id = m.id
        JOIN job_cards jc ON jp.job_card_id = jc.id
-       WHERE jc.created_at >= CURRENT_DATE - INTERVAL '30 days'
-       GROUP BY i.barcode, pm.name, m.name
+       WHERE DATE(jc.created_at) >= CURRENT_DATE - INTERVAL '30 days'
+       GROUP BY pm.name, m.name, i.brand
        ORDER BY total_used DESC
        LIMIT 10`
     );
