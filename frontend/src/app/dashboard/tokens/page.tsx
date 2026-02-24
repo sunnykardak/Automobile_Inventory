@@ -52,6 +52,8 @@ export default function ServiceTokensPage() {
   const [filteredTokens, setFilteredTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedToken, setSelectedToken] = useState<Token | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [stats, setStats] = useState<Stats | null>(null);
@@ -265,6 +267,11 @@ export default function ServiceTokensPage() {
     }
   };
 
+  const openViewModal = (tokenItem: Token) => {
+    setSelectedToken(tokenItem);
+    setShowViewModal(true);
+  };
+
   const completeToken = async (id: number) => {
     try {
       const response = await axios.patch(
@@ -277,6 +284,10 @@ export default function ServiceTokensPage() {
         toast.success('Token completed!');
         fetchTokens();
         fetchStats();
+        // Update selected token if modal is open
+        if (selectedToken && selectedToken.id === id) {
+          setSelectedToken({ ...selectedToken, status: 'completed' });
+        }
       }
     } catch (error) {
       console.error('Error completing token:', error);
@@ -730,9 +741,6 @@ export default function ServiceTokensPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -750,7 +758,11 @@ export default function ServiceTokensPage() {
                   </tr>
                 ) : (
                   filteredTokens.map((tokenItem) => (
-                    <tr key={tokenItem.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={tokenItem.id} 
+                      className="hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => openViewModal(tokenItem)}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="font-mono font-semibold text-brand-600">
                           {tokenItem.token_number}
@@ -787,26 +799,6 @@ export default function ServiceTokensPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(tokenItem.created_at).toLocaleDateString('en-IN')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => printToken(tokenItem)}
-                            className="text-brand-600 hover:text-blue-900"
-                            title="Print Token"
-                          >
-                            <FiPrinter size={18} />
-                          </button>
-                          {tokenItem.status === 'pending' && (
-                            <button
-                              onClick={() => completeToken(tokenItem.id)}
-                              className="text-green-600 hover:text-green-900"
-                              title="Mark as Complete"
-                            >
-                              <FiCheck size={18} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
                     </tr>
                   ))
                 )}
@@ -814,6 +806,140 @@ export default function ServiceTokensPage() {
             </table>
           </div>
         </div>
+
+        {/* View Token Details Modal */}
+        {showViewModal && selectedToken && (
+          <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
+            <div className="modal-content max-w-2xl" onClick={(e) => e.stopPropagation()}>
+              {/* Modal Header */}
+              <div className="modal-header">
+                <h2 className="text-xl font-bold text-gray-900">Token Details</h2>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FiX size={24} />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="modal-body">
+                {/* Token Number Badge */}
+                <div className="text-center mb-6">
+                  <div className="inline-block bg-brand-50 px-6 py-3 rounded-xl">
+                    <div className="text-xs text-gray-500 uppercase mb-1">Token Number</div>
+                    <div className="text-2xl font-bold text-brand-600 font-mono">
+                      {selectedToken.token_number}
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className={`px-3 py-1 inline-flex text-sm font-semibold rounded-full ${
+                      selectedToken.status === 'completed' 
+                        ? 'bg-green-100 text-green-800'
+                        : selectedToken.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {selectedToken.status.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Customer Details */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Customer Details</h3>
+                    <div>
+                      <label className="text-xs text-gray-500">Customer Name</label>
+                      <p className="text-base font-medium text-gray-900">{selectedToken.customer_name}</p>
+                    </div>
+                    {selectedToken.customer_phone && (
+                      <div>
+                        <label className="text-xs text-gray-500">Phone</label>
+                        <p className="text-base font-medium text-gray-900">{selectedToken.customer_phone}</p>
+                      </div>
+                    )}
+                    {selectedToken.bike_number && (
+                      <div>
+                        <label className="text-xs text-gray-500">Bike Number</label>
+                        <p className="text-base font-medium text-gray-900">{selectedToken.bike_number}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Service Details */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Service Details</h3>
+                    <div>
+                      <label className="text-xs text-gray-500">Service Type</label>
+                      <p className="text-base font-medium text-gray-900">{selectedToken.service_type}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500">Amount</label>
+                      <p className="text-2xl font-bold text-green-600">
+                        ₹{Number(selectedToken.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500">Date Created</label>
+                      <p className="text-base font-medium text-gray-900">
+                        {new Date(selectedToken.created_at).toLocaleString('en-IN', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                {selectedToken.notes && (
+                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <label className="text-xs text-gray-500 uppercase font-semibold">Notes</label>
+                    <p className="text-sm text-gray-700 mt-2">{selectedToken.notes}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="modal-footer flex justify-between items-center">
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      printToken(selectedToken);
+                    }}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <FiPrinter size={18} />
+                    Print Token
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  {selectedToken.status === 'pending' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        completeToken(selectedToken.id);
+                      }}
+                      className="btn-primary flex items-center gap-2"
+                    >
+                      <FiCheck size={18} />
+                      Mark as Complete
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowViewModal(false)}
+                    className="btn-secondary"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
