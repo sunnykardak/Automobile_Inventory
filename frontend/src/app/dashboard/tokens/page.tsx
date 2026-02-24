@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { FiPrinter, FiCheck, FiPlus, FiSearch } from 'react-icons/fi';
+import { FiPrinter, FiCheck, FiPlus, FiSearch, FiX } from 'react-icons/fi';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
 
@@ -501,39 +501,46 @@ export default function ServiceTokensPage() {
           </div>
         </div>
 
-        {/* Token Form */}
+        {/* Token Form Modal */}
         {showForm && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Create New Token</h2>
-            
-            {/* Pricing Reference Card */}
-            <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-lg">
-              <h3 className="text-sm font-semibold text-blue-900 mb-3">Pricing Chart</h3>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-brand-200">
-                      <th className="text-left py-2 px-2 text-blue-900">Vehicle Type</th>
-                      <th className="text-right py-2 px-2 text-blue-900">Water Wash</th>
-                      <th className="text-right py-2 px-2 text-blue-900">Foam Wash</th>
-                      <th className="text-right py-2 px-2 text-blue-900">+Diesel Wash</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-brand-800">
-                    {VEHICLE_TYPES.map(v => (
-                      <tr key={v.value} className="border-b border-blue-100">
-                        <td className="py-2 px-2 font-medium">{v.label}</td>
-                        <td className="text-right py-2 px-2">₹{v.waterWash}</td>
-                        <td className="text-right py-2 px-2">₹{v.foamWash}</td>
-                        <td className="text-right py-2 px-2">+₹{v.dieselWash}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <div className="modal-overlay" onClick={() => setShowForm(false)}>
+            <div className="modal-content max-w-4xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2 className="text-xl font-bold text-gray-900">Create New Token</h2>
+                <button onClick={() => setShowForm(false)} className="text-gray-500 hover:text-gray-700">
+                  <FiX size={24} />
+                </button>
               </div>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <div className="modal-body px-4 sm:px-6 py-4 space-y-4">
+              {/* Pricing Reference Card */}
+              <div className="p-4 bg-brand-50 border border-brand-200 rounded-lg">
+                <h3 className="text-sm font-semibold text-blue-900 mb-3">Pricing Chart</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-brand-200">
+                        <th className="text-left py-2 px-2 text-blue-900">Vehicle Type</th>
+                        <th className="text-right py-2 px-2 text-blue-900">Water Wash</th>
+                        <th className="text-right py-2 px-2 text-blue-900">Foam Wash</th>
+                        <th className="text-right py-2 px-2 text-blue-900">+Diesel Wash</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-brand-800">
+                      {VEHICLE_TYPES.map(v => (
+                        <tr key={v.value} className="border-b border-blue-100">
+                          <td className="py-2 px-2 font-medium">{v.label}</td>
+                          <td className="text-right py-2 px-2">₹{v.waterWash}</td>
+                          <td className="text-right py-2 px-2">₹{v.foamWash}</td>
+                          <td className="text-right py-2 px-2">+₹{v.dieselWash}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Customer Name <span className="text-red-500">*</span>
@@ -615,7 +622,7 @@ export default function ServiceTokensPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Add-ons
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
                   <label className="flex items-center gap-2 px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-blue-300 hover:bg-gray-50">
                     <input
                       type="checkbox"
@@ -674,23 +681,25 @@ export default function ServiceTokensPage() {
                 />
               </div>
 
-              <div className="md:col-span-2 flex gap-2 justify-end">
+              <div className="md:col-span-2 flex gap-2 justify-end pt-2">
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="btn-primary disabled:opacity-50"
                 >
                   {loading ? 'Creating...' : 'Create & Print Token'}
                 </button>
               </div>
             </form>
+            </div>
+            </div>
           </div>
         )}
 
