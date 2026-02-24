@@ -108,7 +108,8 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                   }
                 `}
                 style={isActive ? {
-                  background: 'linear-gradient(135deg, rgba(0, 180, 216, 0.15) 0%, rgba(0, 180, 216, 0.05) 100%)',
+                  background: 'linear-gradient(135deg, rgba(0, 77, 128, 0.6) 0%, rgba(1, 48, 80, 0.5) 100%)',
+                  boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.2)',
                 } : undefined}
                 onClick={() => setSidebarOpen(false)}
               >
