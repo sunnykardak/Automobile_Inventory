@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Plus, Search, Eye, CheckCircle, Droplets, Wrench, Package,
-  Trash2, X, Car, User, AlertCircle, DollarSign, Download, FileText,
+  Trash2, X, Car, User, AlertCircle, IndianRupee, Download, FileText,
 } from 'lucide-react';
 
 interface JobCard {
@@ -814,7 +814,7 @@ export default function JobsPage() {
 
                   {/* Cost Summary */}
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2"><DollarSign size={16} /> Cost Summary</h3>
+                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2"><IndianRupee size={16} /> Cost Summary</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between"><span className="text-gray-500">Products:</span><span>₹{calculateJobTotal().products.toLocaleString()}</span></div>
                       <div className="flex justify-between"><span className="text-gray-500">Labor:</span><span>₹{calculateJobTotal().labor.toLocaleString()}</span></div>

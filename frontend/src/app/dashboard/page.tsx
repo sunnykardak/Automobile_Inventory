@@ -9,7 +9,7 @@ import {
   Clipboard,
   CheckCircle,
   AlertTriangle,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   ArrowRight,
   ClipboardList,
@@ -120,7 +120,7 @@ export default function DashboardPage() {
     {
       title: "Today's Revenue",
       value: `₹${overview.todayRevenue.toLocaleString()}`,
-      icon: DollarSign,
+      icon: IndianRupee,
       gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
       shadowColor: 'rgba(139, 92, 246, 0.2)',
       bgTint: 'rgba(139, 92, 246, 0.06)',

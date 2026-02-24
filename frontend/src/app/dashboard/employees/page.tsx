@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Plus, Search, Edit2, X, Phone, Mail,
-  Calendar, DollarSign, Percent, FileText, CheckCircle,
+  Calendar, IndianRupee, Percent, FileText, CheckCircle,
   Users, Wallet, Trash2, Download, UserX, UserCheck,
   MapPin, User, CreditCard, Briefcase,
 } from 'lucide-react';
@@ -456,7 +456,7 @@ export default function EmployeesPage() {
               </p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <DollarSign className="text-purple-600" size={24} />
+              <IndianRupee className="text-purple-600" size={24} />
             </div>
           </div>
         </div>
@@ -919,7 +919,7 @@ export default function EmployeesPage() {
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <DollarSign size={18} />
+                    <IndianRupee size={18} />
                     <span>Salary</span>
                   </div>
                 </button>
@@ -1174,7 +1174,7 @@ export default function EmployeesPage() {
                           <div>
                             <p className="text-xs text-gray-500 uppercase mb-2">Total Commission</p>
                             <div className="flex items-center gap-2">
-                              <DollarSign size={16} className="text-green-600" />
+                              <IndianRupee size={16} className="text-green-600" />
                               <span className="text-xl font-bold text-gray-900">
                                 ₹{(selectedEmployee.total_commission_earned || 0).toLocaleString()}
                               </span>
@@ -1225,7 +1225,7 @@ export default function EmployeesPage() {
                     }}
                     className="btn-secondary flex items-center gap-2"
                   >
-                    <DollarSign size={18} />
+                    <IndianRupee size={18} />
                     Pay Salary
                   </button>
                   <div className="flex gap-2">

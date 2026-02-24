@@ -5,7 +5,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  BarChart2, TrendingUp, TrendingDown, DollarSign, Package,
+  BarChart2, TrendingUp, TrendingDown, IndianRupee, Package,
   Users, Car, Calendar, Download, Filter, RefreshCw,
   AlertTriangle, CheckCircle, Clock, Wrench,
 } from 'lucide-react';
@@ -294,7 +294,7 @@ export default function ReportsPage() {
         <div className="card p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="text-emerald-600" size={20} />
+              <IndianRupee className="text-emerald-600" size={20} />
             </div>
             <div>
               <p className="text-xs text-gray-500">Total Revenue</p>

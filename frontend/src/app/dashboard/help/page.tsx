@@ -4,7 +4,7 @@ import { useState } from 'react';
 import {
   HelpCircle, Book, MessageCircle, Phone, Mail, ChevronDown,
   ChevronUp, Search, FileText, Video, Lightbulb, ExternalLink,
-  CheckCircle, Clipboard, Package, Users, BarChart2, DollarSign,
+  CheckCircle, Clipboard, Package, Users, BarChart2, IndianRupee,
 } from 'lucide-react';
 
 interface FAQ {
