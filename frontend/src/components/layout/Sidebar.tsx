@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard, ClipboardList, Package, BarChart3,
   User, HelpCircle, X, LogOut, Ticket, Users, Wrench,
-  ChevronRight, UserCog,
+  ChevronRight, UserCog, Trophy,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -20,6 +20,7 @@ const menuItems = [
   { name: 'Service Tokens', href: '/dashboard/tokens', icon: Ticket },
   { name: 'Customers', href: '/dashboard/customers', icon: Users },
   { name: 'Employees', href: '/dashboard/employees', icon: UserCog },
+  { name: 'Performance', href: '/dashboard/performance', icon: Trophy },
   { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { name: 'My Account', href: '/dashboard/account', icon: User },

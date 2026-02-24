@@ -118,4 +118,257 @@ router.get('/:id/commissions', async (req, res) => {
   }
 });
 
+// =========================================
+// PERFORMANCE TRACKING ENDPOINTS
+// =========================================
+
+// Get all mechanics performance overview
+router.get('/performance/overview', async (req, res) => {
+  try {
+    const { sortBy = 'total_revenue_generated', order = 'DESC', active = 'true' } = req.query;
+    
+    const validSortColumns = [
+      'mechanic_name', 'total_jobs_assigned', 'jobs_completed', 
+      'completion_rate_percentage', 'total_revenue_generated',
+      'avg_job_value', 'avg_completion_days', 'total_commission_earned'
+    ];
+    
+    const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'total_revenue_generated';
+    const sortOrder = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+    
+    let queryText = `SELECT * FROM mechanic_performance_overview`;
+    
+    if (active === 'true') {
+      queryText += ` WHERE is_active = true`;
+    }
+    
+    queryText += ` ORDER BY ${sortColumn} ${sortOrder}`;
+    
+    const result = await query(queryText);
+    
+    res.json({ 
+      success: true, 
+      data: result.rows,
+      meta: {
+        total: result.rows.length,
+        sortBy: sortColumn,
+        order: sortOrder
+      }
+    });
+  } catch (error) {
+    console.error('Get performance overview error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Get specific mechanic's detailed performance
+router.get('/performance/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { startDate, endDate } = req.query;
+    
+    // Get overview data
+    const overviewResult = await query(
+      `SELECT * FROM mechanic_performance_overview WHERE mechanic_id = $1`,
+      [id]
+    );
+    
+    if (overviewResult.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Mechanic not found' 
+      });
+    }
+    
+    // Get monthly performance
+    const monthlyResult = await query(
+      `SELECT * FROM mechanic_monthly_performance 
+       WHERE mechanic_id = $1 
+       ORDER BY performance_month DESC 
+       LIMIT 12`,
+      [id]
+    );
+    
+    // Get recent jobs
+    const recentJobsResult = await query(
+      `SELECT 
+        jc.*,
+        b.total_amount,
+        b.payment_status,
+        EXTRACT(EPOCH FROM (jc.completed_at - jc.created_at)) / 3600.0 as completion_hours
+       FROM job_cards jc
+       LEFT JOIN bills b ON jc.id = b.job_card_id
+       WHERE jc.assigned_mechanic_id = $1
+       ORDER BY jc.created_at DESC
+       LIMIT 20`,
+      [id]
+    );
+    
+    // Get attendance summary (last 30 days)
+    const attendanceResult = await query(
+      `SELECT 
+        status,
+        COUNT(*) as count
+       FROM attendance
+       WHERE employee_id = $1
+         AND date >= CURRENT_DATE - INTERVAL '30 days'
+       GROUP BY status`,
+      [id]
+    );
+    
+    res.json({
+      success: true,
+      data: {
+        overview: overviewResult.rows[0],
+        monthlyPerformance: monthlyResult.rows,
+        recentJobs: recentJobsResult.rows,
+        attendance: attendanceResult.rows
+      }
+    });
+  } catch (error) {
+    console.error('Get mechanic performance error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Get performance comparison between mechanics
+router.get('/performance/compare', async (req, res) => {
+  try {
+    const { ids, startDate, endDate } = req.query;
+    
+    if (!ids) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Mechanic IDs are required for comparison' 
+      });
+    }
+    
+    const mechanicIds = ids.split(',').map(id => parseInt(id));
+    
+    const result = await query(
+      `SELECT * FROM mechanic_performance_overview 
+       WHERE mechanic_id = ANY($1)
+       ORDER BY total_revenue_generated DESC`,
+      [mechanicIds]
+    );
+    
+    res.json({
+      success: true,
+      data: result.rows
+    });
+  } catch (error) {
+    console.error('Get performance comparison error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Get performance trends (monthly data for charts)
+router.get('/performance/trends', async (req, res) => {
+  try {
+    const { months = 6 } = req.query;
+    
+    const result = await query(
+      `SELECT 
+        mechanic_id,
+        mechanic_name,
+        performance_month,
+        month_name,
+        jobs_assigned,
+        jobs_completed,
+        revenue_generated,
+        commission_earned,
+        days_present,
+        avg_completion_days
+       FROM mechanic_monthly_performance
+       WHERE performance_month >= CURRENT_DATE - INTERVAL '${parseInt(months)} months'
+       ORDER BY mechanic_id, performance_month ASC`
+    );
+    
+    // Group by mechanic
+    const groupedData = result.rows.reduce((acc, row) => {
+      if (!acc[row.mechanic_id]) {
+        acc[row.mechanic_id] = {
+          mechanic_id: row.mechanic_id,
+          mechanic_name: row.mechanic_name,
+          data: []
+        };
+      }
+      acc[row.mechanic_id].data.push({
+        month: row.month_name,
+        month_date: row.performance_month,
+        jobs_assigned: row.jobs_assigned,
+        jobs_completed: row.jobs_completed,
+        revenue: parseFloat(row.revenue_generated),
+        commission: parseFloat(row.commission_earned),
+        attendance: row.days_present,
+        avg_completion_days: parseFloat(row.avg_completion_days || 0)
+      });
+      return acc;
+    }, {});
+    
+    res.json({
+      success: true,
+      data: Object.values(groupedData)
+    });
+  } catch (error) {
+    console.error('Get performance trends error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Get leaderboard (top performers)
+router.get('/performance/leaderboard', async (req, res) => {
+  try {
+    const { metric = 'revenue', period = '30', limit = 10 } = req.query;
+    
+    let orderColumn = 'total_revenue_generated';
+    
+    switch(metric) {
+      case 'jobs':
+        orderColumn = 'jobs_completed';
+        break;
+      case 'efficiency':
+        orderColumn = 'completion_rate_percentage';
+        break;
+      case 'speed':
+        orderColumn = 'avg_completion_days';
+        break;
+      default:
+        orderColumn = 'total_revenue_generated';
+    }
+    
+    const result = await query(
+      `SELECT 
+        mechanic_id,
+        mechanic_name,
+        designation,
+        total_jobs_assigned,
+        jobs_completed,
+        completion_rate_percentage,
+        total_revenue_generated,
+        avg_completion_days,
+        total_commission_earned,
+        jobs_last_${period}_days
+       FROM mechanic_performance_overview
+       WHERE is_active = true
+       ORDER BY ${orderColumn} ${metric === 'speed' ? 'ASC' : 'DESC'}
+       LIMIT $1`,
+      [parseInt(limit)]
+    );
+    
+    res.json({
+      success: true,
+      data: result.rows,
+      meta: {
+        metric: metric,
+        period: period,
+        limit: parseInt(limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get leaderboard error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;
