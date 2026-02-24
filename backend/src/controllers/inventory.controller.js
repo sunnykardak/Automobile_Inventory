@@ -138,6 +138,17 @@ exports.createInventory = async (req, res) => {
       });
     }
     
+    // Handle supplier_contact - convert empty string to null for JSONB field
+    let contactData = null;
+    if (supplierContact && supplierContact !== '') {
+      try {
+        contactData = typeof supplierContact === 'string' ? JSON.parse(supplierContact) : supplierContact;
+      } catch (e) {
+        // If it's a plain string (like phone number), convert it to JSON object
+        contactData = { contact: supplierContact };
+      }
+    }
+    
     const result = await query(
       `INSERT INTO inventory (
         product_master_id, barcode, brand, current_quantity,
@@ -147,13 +158,13 @@ exports.createInventory = async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_DATE)
        RETURNING *`,
       [
-        productMasterId, barcode, brand, currentQuantity,
+        productMasterId, barcode || null, brand, currentQuantity,
         minimumStockLevel || 10, unitPrice, sellingPrice,
-        storageLocation, supplierName, supplierContact,
+        storageLocation || null, supplierName || null, contactData,
       ]
     );
     
-    logger.info(`Inventory item created: ${result.rows[0].barcode}`);
+    logger.info(`Inventory item created: ${result.rows[0].id}`);
     
     res.status(201).json({
       success: true,

@@ -285,6 +285,28 @@ export default function InventoryPage() {
 
   const handleAddInventory = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.productMasterId || formData.productMasterId === '') {
+      toast.error('Please select a spare part item');
+      return;
+    }
+    
+    if (!formData.currentQuantity || formData.currentQuantity <= 0) {
+      toast.error('Please enter a valid quantity');
+      return;
+    }
+    
+    if (!formData.unitPrice || formData.unitPrice <= 0) {
+      toast.error('Please enter a valid unit price');
+      return;
+    }
+    
+    if (!formData.sellingPrice || formData.sellingPrice <= 0) {
+      toast.error('Please enter a valid selling price');
+      return;
+    }
+    
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/inventory`,
@@ -299,7 +321,8 @@ export default function InventoryPage() {
         fetchInventory();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to add inventory');
+      console.error('Add inventory error:', error.response?.data || error);
+      toast.error(error.response?.data?.message || 'Failed to add inventory item');
     }
   };
 
