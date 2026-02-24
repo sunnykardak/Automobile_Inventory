@@ -176,7 +176,11 @@ export default function CustomersPage() {
     try {
       const response = await axios.post(
         `${API_URL}/customers/${selectedCustomer.id}/vehicles`,
-        vehicleForm,
+        {
+          ...vehicleForm,
+          registrationDate: vehicleForm.registrationDate || null,
+          insuranceExpiry: vehicleForm.insuranceExpiry || null,
+        },
         getAuthHeader()
       );
       if (response.data.success) {
