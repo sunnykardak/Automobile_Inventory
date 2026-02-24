@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { FiPrinter, FiCheck, FiPlus, FiSearch, FiX } from 'react-icons/fi';
+import { MessageCircle } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
 
@@ -445,6 +446,31 @@ export default function ServiceTokensPage() {
     `);
     
     printWindow.document.close();
+  };
+
+  const handleSendWhatsApp = async (tokenId: number) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/whatsapp/send-token`,
+        { tokenId },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        toast.success('Token sent via WhatsApp!');
+      } else {
+        toast.error(response.data.message || 'Failed to send WhatsApp message');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to send WhatsApp message';
+      toast.error(errorMessage);
+      console.error('WhatsApp send error:', error);
+    }
   };
 
   return (
@@ -926,6 +952,18 @@ export default function ServiceTokensPage() {
                     <FiPrinter size={18} />
                     Print Token
                   </button>
+                  {selectedToken.customer_phone && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSendWhatsApp(selectedToken.id);
+                      }}
+                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                    >
+                      <MessageCircle size={18} />
+                      Send via WhatsApp
+                    </button>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   {selectedToken.status === 'pending' && (

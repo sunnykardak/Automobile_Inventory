@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Plus, Search, Eye, CheckCircle, Droplets, Wrench, Package,
-  Trash2, X, Car, User, AlertCircle, IndianRupee, Download, FileText,
+  Trash2, X, Car, User, AlertCircle, IndianRupee, Download, FileText, MessageCircle,
 } from 'lucide-react';
 
 interface JobCard {
@@ -406,6 +406,29 @@ export default function JobsPage() {
     }
   };
 
+  const handleSendWhatsApp = async (jobId: number, type: 'job-card' | 'invoice' = 'job-card') => {
+    try {
+      const endpoint = type === 'job-card' ? 'send-job-card' : 'send-invoice';
+      const payload = type === 'job-card' ? { jobCardId: jobId } : { billId: jobId };
+
+      const response = await axios.post(
+        `${API_URL}/whatsapp/${endpoint}`,
+        payload,
+        getAuthHeader()
+      );
+
+      if (response.data.success) {
+        toast.success(`${type === 'job-card' ? 'Job card' : 'Invoice'} sent via WhatsApp!`);
+      } else {
+        toast.error(response.data.message || 'Failed to send WhatsApp message');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to send WhatsApp message';
+      toast.error(errorMessage);
+      console.error('WhatsApp send error:', error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       customerName: '', customerPhone: '', customerEmail: '',
@@ -566,6 +589,15 @@ export default function JobsPage() {
                         >
                           <Eye size={18} />
                         </button>
+                        {job.customer_phone && (
+                          <button
+                            onClick={() => handleSendWhatsApp(job.id, 'job-card')}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                            title="Send Job Card via WhatsApp"
+                          >
+                            <MessageCircle size={18} />
+                          </button>
+                        )}
                         {job.status === 'Completed' && job.bill_id && (
                           <button
                             onClick={() => handleDownloadPDF(job.bill_id!)}
@@ -847,11 +879,30 @@ export default function JobsPage() {
                   )}
                   
                   {selectedJob.status === 'Completed' && selectedJob.bill_id && (
+                    <div className="space-y-2">
+                      <button 
+                        onClick={() => handleDownloadPDF(selectedJob.bill_id!)} 
+                        className="w-full gradient-brand text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:from-brand-700 hover:to-brand-900 transition-all shadow-lg shadow-brand-500/30"
+                      >
+                        <Download size={20} /> Download Invoice PDF
+                      </button>
+                      {selectedJob.customer_phone && (
+                        <button 
+                          onClick={() => handleSendWhatsApp(selectedJob.bill_id!, 'invoice')} 
+                          className="w-full bg-green-600 text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-green-700 transition-all shadow-lg shadow-green-500/30"
+                        >
+                          <MessageCircle size={20} /> Send Invoice via WhatsApp
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  
+                  {selectedJob.customer_phone && (
                     <button 
-                      onClick={() => handleDownloadPDF(selectedJob.bill_id!)} 
-                      className="w-full gradient-brand text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:from-brand-700 hover:to-brand-900 transition-all shadow-lg shadow-brand-500/30"
+                      onClick={() => handleSendWhatsApp(selectedJob.id, 'job-card')} 
+                      className="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-green-700 transition-all"
                     >
-                      <Download size={20} /> Download Invoice PDF
+                      <MessageCircle size={18} /> Send Job Card via WhatsApp
                     </button>
                   )}
                 </div>

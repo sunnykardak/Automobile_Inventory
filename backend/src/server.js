@@ -28,6 +28,7 @@ const vehicleModelRoutes = require('./routes/vehicleModel.routes');
 const labourRoutes = require('./routes/labour.routes');
 const tokenRoutes = require('./routes/token.routes');
 const customerRoutes = require('./routes/customer.routes');
+const whatsappRoutes = require('./routes/whatsapp.routes');
 
 const app = express();
 
@@ -101,6 +102,7 @@ app.use(`${API_PREFIX}/products`, productRoutes);
 app.use(`${API_PREFIX}/vehicle-models`, vehicleModelRoutes);
 app.use(`${API_PREFIX}/labour-charges`, labourRoutes);
 app.use(`${API_PREFIX}/service-tokens`, tokenRoutes);
+app.use(`${API_PREFIX}/whatsapp`, whatsappRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
