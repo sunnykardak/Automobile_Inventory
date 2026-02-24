@@ -27,19 +27,50 @@ exports.getDashboard = async (req, res) => {
       [today]
     );
     
-    // Today's revenue
+    // Today's revenue (Bills + Completed Service Tokens)
     const todayRevenueResult = await query(
-      `SELECT COALESCE(SUM(total_amount), 0) as revenue 
-       FROM bills WHERE DATE(created_at) = $1`,
+      `SELECT 
+        COALESCE(SUM(total_amount), 0) as revenue 
+       FROM bills WHERE DATE(created_at) = $1
+       UNION ALL
+       SELECT 
+        COALESCE(SUM(amount), 0) as revenue 
+       FROM service_tokens 
+       WHERE DATE(completed_at) = $1 AND status = 'completed'`,
       [today]
     );
     
-    // Monthly revenue
+    const todayRevenue = todayRevenueResult.rows.reduce((sum, row) => sum + parseFloat(row.revenue), 0);
+    
+    // Monthly revenue (Bills + Completed Service Tokens)
     const monthlyRevenueResult = await query(
-      `SELECT COALESCE(SUM(total_amount), 0) as revenue 
+      `SELECT 
+        COALESCE(SUM(total_amount), 0) as revenue 
        FROM bills 
        WHERE EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
-       AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)`
+       AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+       UNION ALL
+       SELECT 
+        COALESCE(SUM(amount), 0) as revenue 
+       FROM service_tokens 
+       WHERE EXTRACT(MONTH FROM completed_at) = EXTRACT(MONTH FROM CURRENT_DATE)
+       AND EXTRACT(YEAR FROM completed_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+       AND status = 'completed'`
+    );
+    
+    const monthlyRevenue = monthlyRevenueResult.rows.reduce((sum, row) => sum + parseFloat(row.revenue), 0);
+    
+    // Service tokens today
+    const serviceTokensTodayResult = await query(
+      `SELECT COUNT(*) as count FROM service_tokens WHERE DATE(created_at) = $1`,
+      [today]
+    );
+    
+    // Completed service tokens today
+    const completedTokensTodayResult = await query(
+      `SELECT COUNT(*) as count FROM service_tokens 
+       WHERE DATE(completed_at) = $1 AND status = 'completed'`,
+      [today]
     );
     
     // Low stock alerts
@@ -80,14 +111,37 @@ exports.getDashboard = async (req, res) => {
        LIMIT 10`
     );
     
-    // Revenue graph data (last 7 days)
+    // Revenue graph data (last 7 days) - Bills + Service Tokens
     const revenueGraphResult = await query(
-      `SELECT DATE(created_at) as date, 
-              COALESCE(SUM(total_amount), 0) as revenue
-       FROM bills
-       WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
-       GROUP BY DATE(created_at)
-       ORDER BY DATE(created_at) ASC`
+      `WITH daily_bills AS (
+        SELECT DATE(created_at) as date, 
+               COALESCE(SUM(total_amount), 0) as revenue
+        FROM bills
+        WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+        GROUP BY DATE(created_at)
+      ),
+      daily_tokens AS (
+        SELECT DATE(completed_at) as date,
+               COALESCE(SUM(amount), 0) as revenue
+        FROM service_tokens
+        WHERE completed_at >= CURRENT_DATE - INTERVAL '7 days'
+        AND status = 'completed'
+        GROUP BY DATE(completed_at)
+      ),
+      all_dates AS (
+        SELECT generate_series(
+          CURRENT_DATE - INTERVAL '7 days',
+          CURRENT_DATE,
+          INTERVAL '1 day'
+        )::date as date
+      )
+      SELECT 
+        ad.date,
+        COALESCE(db.revenue, 0) + COALESCE(dt.revenue, 0) as revenue
+      FROM all_dates ad
+      LEFT JOIN daily_bills db ON ad.date = db.date
+      LEFT JOIN daily_tokens dt ON ad.date = dt.date
+      ORDER BY ad.date ASC`
     );
     
     // Active jobs status distribution
@@ -105,9 +159,11 @@ exports.getDashboard = async (req, res) => {
           totalJobsToday: parseInt(totalJobsTodayResult.rows[0].count),
           pendingJobs: parseInt(pendingJobsResult.rows[0].count),
           completedJobsToday: parseInt(completedJobsTodayResult.rows[0].count),
-          todayRevenue: parseFloat(todayRevenueResult.rows[0].revenue),
-          monthlyRevenue: parseFloat(monthlyRevenueResult.rows[0].revenue),
+          todayRevenue: todayRevenue,
+          monthlyRevenue: monthlyRevenue,
           lowStockItems: parseInt(lowStockResult.rows[0].count),
+          serviceTokensToday: parseInt(serviceTokensTodayResult.rows[0].count),
+          completedTokensToday: parseInt(completedTokensTodayResult.rows[0].count),
         },
         topUsedParts: topPartsResult.rows,
         topMechanics: topMechanicsResult.rows,
@@ -133,17 +189,39 @@ exports.getRevenueChart = async (req, res) => {
     const { months = 12 } = req.query;
     
     const result = await query(
-      `SELECT 
-        TO_CHAR(created_at, 'Mon YYYY') as month,
-        COALESCE(SUM(total_amount), 0) as revenue,
-        COUNT(DISTINCT id) as bill_count
-       FROM bills
-       WHERE created_at >= CURRENT_DATE - INTERVAL '${parseInt(months)} months'
-       GROUP BY TO_CHAR(created_at, 'Mon YYYY'), DATE_TRUNC('month', created_at)
-       ORDER BY DATE_TRUNC('month', created_at) ASC`
+      `WITH bills_revenue AS (
+        SELECT 
+          TO_CHAR(created_at, 'Mon YYYY') as month,
+          DATE_TRUNC('month', created_at) as month_date,
+          COALESCE(SUM(total_amount), 0) as revenue,
+          COUNT(DISTINCT id) as bill_count
+        FROM bills
+        WHERE created_at >= CURRENT_DATE - INTERVAL '${parseInt(months)} months'
+        GROUP BY TO_CHAR(created_at, 'Mon YYYY'), DATE_TRUNC('month', created_at)
+      ),
+      tokens_revenue AS (
+        SELECT 
+          TO_CHAR(completed_at, 'Mon YYYY') as month,
+          DATE_TRUNC('month', completed_at) as month_date,
+          COALESCE(SUM(amount), 0) as revenue,
+          COUNT(DISTINCT id) as token_count
+        FROM service_tokens
+        WHERE completed_at >= CURRENT_DATE - INTERVAL '${parseInt(months)} months'
+        AND status = 'completed'
+        GROUP BY TO_CHAR(completed_at, 'Mon YYYY'), DATE_TRUNC('month', completed_at)
+      )
+      SELECT 
+        COALESCE(br.month, tr.month) as month,
+        COALESCE(br.month_date, tr.month_date) as month_date,
+        COALESCE(br.revenue, 0) + COALESCE(tr.revenue, 0) as revenue,
+        COALESCE(br.bill_count, 0) as bill_count,
+        COALESCE(tr.token_count, 0) as token_count
+      FROM bills_revenue br
+      FULL OUTER JOIN tokens_revenue tr ON br.month_date = tr.month_date
+      ORDER BY COALESCE(br.month_date, tr.month_date) ASC`
     );
     
-    res. status(200).json({
+    res.status(200).json({
       success: true,
       data: result.rows,
     });

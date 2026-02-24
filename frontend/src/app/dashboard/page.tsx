@@ -16,6 +16,7 @@ import {
   Package,
   Wrench,
   BarChart3,
+  Ticket,
 } from 'lucide-react';
 
 interface DashboardData {
@@ -26,6 +27,8 @@ interface DashboardData {
     todayRevenue: number;
     monthlyRevenue: number;
     lowStockItems: number;
+    serviceTokensToday: number;
+    completedTokensToday: number;
   };
   topUsedParts: any[];
   topMechanics: any[];
@@ -90,6 +93,8 @@ export default function DashboardPage() {
     todayRevenue: 0,
     monthlyRevenue: 0,
     lowStockItems: 0,
+    serviceTokensToday: 0,
+    completedTokensToday: 0,
   };
 
   const stats = [
@@ -100,6 +105,14 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #00b4d8 0%, #0096c7 100%)',
       shadowColor: 'rgba(4, 201, 171, 0.2)',
       bgTint: 'rgba(4, 201, 171, 0.06)',
+    },
+    {
+      title: 'Service Tokens Today',
+      value: overview.serviceTokensToday,
+      icon: Ticket,
+      gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+      shadowColor: 'rgba(6, 182, 212, 0.2)',
+      bgTint: 'rgba(6, 182, 212, 0.06)',
     },
     {
       title: 'Pending Jobs',
@@ -118,12 +131,21 @@ export default function DashboardPage() {
       bgTint: 'rgba(16, 185, 129, 0.06)',
     },
     {
+      title: 'Tokens Completed',
+      value: overview.completedTokensToday,
+      icon: CheckCircle,
+      gradient: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
+      shadowColor: 'rgba(20, 184, 166, 0.2)',
+      bgTint: 'rgba(20, 184, 166, 0.06)',
+    },
+    {
       title: "Today's Revenue",
       value: `₹${overview.todayRevenue.toLocaleString()}`,
       icon: IndianRupee,
       gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
       shadowColor: 'rgba(139, 92, 246, 0.2)',
       bgTint: 'rgba(139, 92, 246, 0.06)',
+      subtitle: 'Jobs + Tokens',
     },
     {
       title: 'Monthly Revenue',
@@ -132,6 +154,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
       shadowColor: 'rgba(59, 130, 246, 0.2)',
       bgTint: 'rgba(59, 130, 246, 0.06)',
+      subtitle: 'Jobs + Tokens',
     },
     {
       title: 'Low Stock Alerts',
@@ -213,6 +236,11 @@ export default function DashboardPage() {
                   <p className="text-3xl font-bold text-gray-900 font-display tracking-tight">
                     {stat.value}
                   </p>
+                  {stat.subtitle && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {stat.subtitle}
+                    </p>
+                  )}
                 </div>
                 <div
                   className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
