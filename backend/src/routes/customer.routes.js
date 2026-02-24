@@ -331,4 +331,237 @@ router.delete('/:id/vehicles/:vehicleId', authorize('Admin', 'Owner'), async (re
   }
 });
 
+// Get complete vehicle history by vehicle number
+router.get('/vehicle-history/:vehicleNumber', async (req, res) => {
+  try {
+    const { vehicleNumber } = req.params;
+    
+    // Get vehicle basic info
+    const vehicleResult = await query(
+      `SELECT cv.*, c.customer_name, c.phone, c.email, c.address, c.city
+       FROM customer_vehicles cv
+       JOIN customers c ON cv.customer_id = c.id
+       WHERE cv.vehicle_number = $1`,
+      [vehicleNumber.toUpperCase()]
+    );
+    
+    if (vehicleResult.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Vehicle not found' 
+      });
+    }
+    
+    const vehicle = vehicleResult.rows[0];
+    
+    // Get all job cards for this vehicle
+    const jobsResult = await query(
+      `SELECT 
+        jc.*,
+        e.first_name || ' ' || e.last_name as mechanic_name,
+        b.bill_number,
+        b.total_amount,
+        b.paid_amount,
+        b.payment_status,
+        b.payment_method
+       FROM job_cards jc
+       LEFT JOIN employees e ON jc.assigned_mechanic_id = e.id
+       LEFT JOIN bills b ON jc.id = b.job_card_id
+       WHERE jc.vehicle_number = $1
+       ORDER BY jc.created_at DESC`,
+      [vehicleNumber.toUpperCase()]
+    );
+    
+    // Get parts used in all jobs
+    const partsResult = await query(
+      `SELECT 
+        jp.job_card_id,
+        pm.name as part_name,
+        COALESCE(m.name, i.brand) as brand,
+        jp.quantity,
+        jp.unit_price,
+        jp.total_price,
+        jp.added_at
+       FROM job_products jp
+       JOIN inventory i ON jp.inventory_id = i.id
+       JOIN product_master pm ON i.product_master_id = pm.id
+       LEFT JOIN manufacturers m ON pm.manufacturer_id = m.id
+       JOIN job_cards jc ON jp.job_card_id = jc.id
+       WHERE jc.vehicle_number = $1
+       ORDER BY jp.added_at DESC`,
+      [vehicleNumber.toUpperCase()]
+    );
+    
+    // Get service tokens for this vehicle
+    const tokensResult = await query(
+      `SELECT * FROM service_tokens
+       WHERE vehicle_number = $1
+       ORDER BY created_at DESC`,
+      [vehicleNumber.toUpperCase()]
+    );
+    
+    // Calculate summary statistics
+    const statsResult = await query(
+      `SELECT 
+        COUNT(jc.id) as total_jobs,
+        COUNT(CASE WHEN jc.status = 'Completed' THEN 1 END) as completed_jobs,
+        COUNT(CASE WHEN jc.status = 'In Progress' THEN 1 END) as ongoing_jobs,
+        COALESCE(SUM(b.total_amount), 0) as total_spent,
+        COALESCE(SUM(b.paid_amount), 0) as total_paid,
+        COALESCE(SUM(CASE WHEN b.payment_status = 'Pending' THEN b.total_amount - b.paid_amount ELSE 0 END), 0) as pending_amount,
+        COALESCE(AVG(jc.actual_cost), 0) as avg_job_cost,
+        MAX(jc.created_at) as last_service_date,
+        MIN(jc.created_at) as first_service_date
+       FROM job_cards jc
+       LEFT JOIN bills b ON jc.id = b.job_card_id
+       WHERE jc.vehicle_number = $1`,
+      [vehicleNumber.toUpperCase()]
+    );
+    
+    // Get most used parts
+    const topPartsResult = await query(
+      `SELECT 
+        pm.name as part_name,
+        COALESCE(m.name, i.brand) as brand,
+        SUM(jp.quantity) as total_quantity,
+        COUNT(DISTINCT jp.job_card_id) as times_used,
+        SUM(jp.total_price) as total_cost
+       FROM job_products jp
+       JOIN inventory i ON jp.inventory_id = i.id
+       JOIN product_master pm ON i.product_master_id = pm.id
+       LEFT JOIN manufacturers m ON pm.manufacturer_id = m.id
+       JOIN job_cards jc ON jp.job_card_id = jc.id
+       WHERE jc.vehicle_number = $1
+       GROUP BY pm.name, m.name, i.brand
+       ORDER BY total_quantity DESC
+       LIMIT 10`,
+      [vehicleNumber.toUpperCase()]
+    );
+    
+    // Get common issues
+    const issuesResult = await query(
+      `SELECT 
+        reported_issues,
+        status,
+        created_at,
+        actual_cost
+       FROM job_cards
+       WHERE vehicle_number = $1
+         AND reported_issues IS NOT NULL
+       ORDER BY created_at DESC
+       LIMIT 20`,
+      [vehicleNumber.toUpperCase()]
+    );
+    
+    res.json({
+      success: true,
+      data: {
+        vehicle: vehicle,
+        jobs: jobsResult.rows,
+        parts: partsResult.rows,
+        tokens: tokensResult.rows,
+        statistics: statsResult.rows[0],
+        topParts: topPartsResult.rows,
+        recentIssues: issuesResult.rows,
+      },
+    });
+  } catch (error) {
+    console.error('Get vehicle history error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Search vehicles by number or customer
+router.get('/search-vehicles', async (req, res) => {
+  try {
+    const { search } = req.query;
+    
+    if (!search || search.length < 2) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Search query must be at least 2 characters' 
+      });
+    }
+    
+    const result = await query(
+      `SELECT 
+        cv.*,
+        c.customer_name,
+        c.phone,
+        c.email,
+        COUNT(jc.id) as service_count,
+        MAX(jc.created_at) as last_service_date
+       FROM customer_vehicles cv
+       JOIN customers c ON cv.customer_id = c.id
+       LEFT JOIN job_cards jc ON cv.vehicle_number = jc.vehicle_number
+       WHERE cv.vehicle_number ILIKE $1
+          OR c.customer_name ILIKE $1
+          OR c.phone ILIKE $1
+       GROUP BY cv.id, c.customer_name, c.phone, c.email
+       ORDER BY last_service_date DESC NULLS LAST
+       LIMIT 10`,
+      [`%${search}%`]
+    );
+    
+    res.json({
+      success: true,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Search vehicles error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Get customer summary view
+router.get('/summary/all', async (req, res) => {
+  try {
+    const { page = 1, limit = 20, status = 'all', sortBy = 'last_visit_date' } = req.query;
+    
+    let whereClause = 'WHERE 1=1';
+    const params = [];
+    
+    if (status !== 'all') {
+      whereClause += ` AND customer_status = $${params.length + 1}`;
+      params.push(status);
+    }
+    
+    const orderOptions = {
+      'last_visit_date': 'last_visit_date DESC NULLS LAST',
+      'total_spent': 'total_spent DESC',
+      'name': 'customer_name ASC',
+      'jobs': 'total_jobs DESC',
+    };
+    
+    const orderBy = orderOptions[sortBy] || orderOptions['last_visit_date'];
+    
+    const result = await query(
+      `SELECT * FROM customer_summary 
+       ${whereClause}
+       ORDER BY ${orderBy}
+       LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, (page - 1) * limit]
+    );
+    
+    const countResult = await query(
+      `SELECT COUNT(*) FROM customer_summary ${whereClause}`,
+      params
+    );
+    
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: {
+        total: parseInt(countResult.rows[0].count),
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(countResult.rows[0].count / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get customer summary error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

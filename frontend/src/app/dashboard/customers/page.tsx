@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Plus, Search, Eye, Edit, Trash2, X, User, Phone, Mail,
-  MapPin, Building, Car, FileText, Calendar, CheckCircle,
+  MapPin, Building, Car, FileText, Calendar, CheckCircle, History,
 } from 'lucide-react';
 
 interface Customer {
@@ -54,8 +54,12 @@ export default function CustomersPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [showEditVehicleModal, setShowEditVehicleModal] = useState(false);
+  const [showVehicleSearchModal, setShowVehicleSearchModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [vehicleSearchTerm, setVehicleSearchTerm] = useState('');
+  const [vehicleSearchResults, setVehicleSearchResults] = useState<any[]>([]);
+  const [searchingVehicles, setSearchingVehicles] = useState(false);
 
   const [formData, setFormData] = useState({
     customerName: '',
@@ -116,6 +120,29 @@ export default function CustomersPage() {
       }
     } catch (error) {
       toast.error('Failed to fetch customer details');
+    }
+  };
+
+  const searchVehicles = async () => {
+    if (!vehicleSearchTerm || vehicleSearchTerm.length < 2) {
+      toast.error('Please enter at least 2 characters');
+      return;
+    }
+    
+    try {
+      setSearchingVehicles(true);
+      const response = await axios.get(
+        `${API_URL}/customers/search-vehicles?search=${vehicleSearchTerm}`,
+        getAuthHeader()
+      );
+      if (response.data.success) {
+        setVehicleSearchResults(response.data.data);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to search vehicles');
+      setVehicleSearchResults([]);
+    } finally {
+      setSearchingVehicles(false);
     }
   };
 
@@ -317,12 +344,24 @@ export default function CustomersPage() {
           <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
           <p className="text-gray-600 mt-1">Manage your customer database</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="btn-primary flex items-center gap-2"
-        >
-          <Plus size={20} /> Add Customer
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              setShowVehicleSearchModal(true);
+              setVehicleSearchTerm('');
+              setVehicleSearchResults([]);
+            }}
+            className="btn bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+          >
+            <History size={20} /> Vehicle History
+          </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus size={20} /> Add Customer
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -722,7 +761,7 @@ export default function CustomersPage() {
                   <div className="space-y-3 max-h-80 overflow-y-auto">
                     {selectedCustomer.vehicles && selectedCustomer.vehicles.length > 0 ? (
                       selectedCustomer.vehicles.map((vehicle: Vehicle) => (
-                        <div key={vehicle.id} className="bg-gray-50 p-4 rounded-lg">
+                        <div key={vehicle.id} className="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <Car size={20} className="text-brand-600" />
@@ -733,15 +772,22 @@ export default function CustomersPage() {
                             </div>
                             <div className="flex gap-2">
                               <button
+                                onClick={() => window.location.href = `/dashboard/customers/vehicle-history?number=${vehicle.vehicle_number}`}
+                                className="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="View service history"
+                              >
+                                <History size={18} />
+                              </button>
+                              <button
                                 onClick={() => openEditVehicleModal(vehicle)}
-                                className="text-brand-600 hover:text-brand-700"
+                                className="text-brand-600 hover:text-brand-700 p-2 hover:bg-brand-50 rounded-lg transition-colors"
                                 title="Edit vehicle"
                               >
                                 <Edit size={16} />
                               </button>
                               <button
                                 onClick={() => handleDeleteVehicle(vehicle.id)}
-                                className="text-red-500 hover:text-red-700"
+                                className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Delete vehicle"
                               >
                                 <Trash2 size={16} />
@@ -1031,6 +1077,123 @@ export default function CustomersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Vehicle Search Modal */}
+      {showVehicleSearchModal && (
+        <div className="modal-overlay" onClick={() => setShowVehicleSearchModal(false)}>
+          <div className="modal-content max-w-3xl" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <History size={24} className="text-blue-600" />
+                  Search Vehicle History
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">Search by vehicle number, customer name, or phone</p>
+              </div>
+              <button onClick={() => setShowVehicleSearchModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="modal-body space-y-4">
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Enter vehicle number, customer name, or phone..."
+                    className="input pl-10 w-full"
+                    value={vehicleSearchTerm}
+                    onChange={(e) => setVehicleSearchTerm(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && searchVehicles()}
+                    autoFocus
+                  />
+                </div>
+                <button
+                  onClick={searchVehicles}
+                  disabled={searchingVehicles || vehicleSearchTerm.length < 2}
+                  className="btn btn-primary"
+                >
+                  {searchingVehicles ? 'Searching...' : 'Search'}
+                </button>
+              </div>
+
+              {vehicleSearchResults.length > 0 && (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  <p className="text-sm text-gray-600 font-medium">
+                    Found {vehicleSearchResults.length} vehicle(s)
+                  </p>
+                  {vehicleSearchResults.map((vehicle: any) => (
+                    <div
+                      key={vehicle.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer"
+                      onClick={() => {
+                        window.location.href = `/dashboard/customers/vehicle-history?number=${vehicle.vehicle_number}`;
+                      }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <Car size={24} className="text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-mono font-bold text-lg text-gray-900">
+                              {vehicle.vehicle_number}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {vehicle.vehicle_brand} {vehicle.vehicle_model} ({vehicle.vehicle_type})
+                            </p>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <User size={14} />
+                                {vehicle.customer_name}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Phone size={14} />
+                                {vehicle.phone}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right ml-4">
+                          <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+                            {vehicle.service_count || 0} Services
+                          </div>
+                          {vehicle.last_service_date && (
+                            <p className="text-xs text-gray-500">
+                              Last: {new Date(vehicle.last_service_date).toLocaleDateString('en-IN')}
+                            </p>
+                          )}
+                          <button className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 ml-auto">
+                            <History size={14} />
+                            View History
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {vehicleSearchTerm.length >= 2 && vehicleSearchResults.length === 0 && !searchingVehicles && (
+                <div className="text-center py-12">
+                  <Car size={48} className="mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500">No vehicles found</p>
+                  <p className="text-sm text-gray-400 mt-1">Try searching with a different term</p>
+                </div>
+              )}
+
+              {vehicleSearchTerm.length < 2 && (
+                <div className="text-center py-12">
+                  <Search size={48} className="mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500">Enter at least 2 characters to search</p>
+                  <p className="text-sm text-gray-400 mt-1">Search by vehicle number, customer name, or phone</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
