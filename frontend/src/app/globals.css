@@ -505,6 +505,33 @@
   @page {
     margin: 1cm;
   }
+
+  /* Print styles for QR/Barcode modal */
+  .fixed {
+    position: static !important;
+  }
+
+  .bg-black {
+    background: transparent !important;
+  }
+
+  .max-h-\\[90vh\\] {
+    max-height: none !important;
+  }
+
+  .overflow-y-auto {
+    overflow: visible !important;
+  }
+
+  /* Hide close button and footer in print */
+  button {
+    display: none !important;
+  }
+
+  /* Ensure QR and barcode are visible */
+  svg {
+    display: block !important;
+  }
 }
 
 /* ============ SKELETON ============ */

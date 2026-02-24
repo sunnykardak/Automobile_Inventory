@@ -11,8 +11,13 @@ import {
   Search, 
   Filter, 
   AlertCircle, 
-  Barcode 
+  Barcode,
+  QrCode,
+  Printer,
+  X
 } from 'lucide-react';
+import QRCode from 'react-qr-code';
+import BarcodeComponent from 'react-barcode';
 
 interface InventoryItem {
   id: number;
@@ -81,6 +86,7 @@ export default function InventoryPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showRestockModal, setShowRestockModal] = useState(false);
+  const [showBarcodeModal, setShowBarcodeModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   
   const [formData, setFormData] = useState({
@@ -517,10 +523,17 @@ export default function InventoryPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-1 text-sm text-gray-900">
-                        <Barcode className="text-gray-400" />
-                        {item.barcode}
-                      </div>
+                      {item.barcode ? (
+                        <BarcodeComponent 
+                          value={item.barcode} 
+                          width={1.5}
+                          height={40}
+                          fontSize={10}
+                          margin={0}
+                        />
+                      ) : (
+                        <span className="text-xs text-gray-400">No barcode</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">{item.category_name}</td>
                     <td className="px-6 py-4">
@@ -546,14 +559,24 @@ export default function InventoryPage() {
                           className="text-brand-600 hover:text-brand-800"
                           title="Edit"
                         >
-                          <Edit2 />
+                          <Edit2 size={18} />
                         </button>
                         <button
                           onClick={() => openRestockModal(item)}
                           className="text-green-600 hover:text-green-800"
                           title="Restock"
                         >
-                          <Package />
+                          <Package size={18} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setShowBarcodeModal(true);
+                          }}
+                          className="text-purple-600 hover:text-purple-800"
+                          title="View QR/Barcode"
+                        >
+                          <QrCode size={18} />
                         </button>
                       </div>
                     </td>
@@ -1006,6 +1029,138 @@ export default function InventoryPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code & Barcode Modal */}
+      {showBarcodeModal && selectedItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Product QR Code & Barcode</h2>
+                <p className="text-gray-600">{selectedItem.product_name}</p>
+                <p className="text-sm text-gray-500">{selectedItem.part_number}</p>
+              </div>
+              <button
+                onClick={() => setShowBarcodeModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* QR Code Section */}
+                <div className="border-2 border-gray-200 rounded-lg p-6 bg-white">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <QrCode className="text-brand-600" />
+                    QR Code
+                  </h3>
+                  <div className="flex flex-col items-center">
+                    <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+                      <QRCode
+                        value={JSON.stringify({
+                          id: selectedItem.id,
+                          name: selectedItem.product_name,
+                          part_number: selectedItem.part_number,
+                          barcode: selectedItem.barcode,
+                          brand: selectedItem.brand
+                        })}
+                        size={200}
+                        level="H"
+                      />
+                    </div>
+                    <p className="mt-3 text-xs text-gray-500 text-center">
+                      Scan to view product details
+                    </p>
+                  </div>
+                </div>
+
+                {/* Barcode Section */}
+                <div className="border-2 border-gray-200 rounded-lg p-6 bg-white">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <Barcode className="text-brand-600" />
+                    Barcode
+                  </h3>
+                  <div className="flex flex-col items-center">
+                    {selectedItem.barcode && selectedItem.barcode.trim() !== '' ? (
+                      <>
+                        <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+                          <BarcodeComponent
+                            value={selectedItem.barcode}
+                            format="CODE128"
+                            width={2}
+                            height={80}
+                            displayValue={true}
+                            fontSize={14}
+                          />
+                        </div>
+                        <p className="mt-3 text-xs text-gray-500 text-center">
+                          Product barcode: {selectedItem.barcode}
+                        </p>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                        <Barcode size={48} className="mb-2" />
+                        <p className="text-sm">No barcode available</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Information */}
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold text-gray-800 mb-3">Product Information</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Product Name:</span>
+                    <p className="font-medium text-gray-900">{selectedItem.product_name}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Part Number:</span>
+                    <p className="font-medium text-gray-900">{selectedItem.part_number}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Brand:</span>
+                    <p className="font-medium text-gray-900">{selectedItem.brand}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Category:</span>
+                    <p className="font-medium text-gray-900">{selectedItem.category_name}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Stock Quantity:</span>
+                    <p className="font-medium text-gray-900">{selectedItem.current_quantity}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Price:</span>
+                    <p className="font-medium text-gray-900">₹{selectedItem.selling_price}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t flex gap-3">
+              <button
+                onClick={() => {
+                  window.print();
+                }}
+                className="flex-1 bg-brand-600 text-white py-2 px-4 rounded-lg hover:bg-brand-700 flex items-center justify-center gap-2"
+              >
+                <Printer size={18} />
+                Print
+              </button>
+              <button
+                onClick={() => setShowBarcodeModal(false)}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
