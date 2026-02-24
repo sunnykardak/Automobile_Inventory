@@ -117,20 +117,20 @@ exports.getDashboard = async (req, res) => {
         SELECT DATE(created_at) as date, 
                COALESCE(SUM(total_amount), 0) as revenue
         FROM bills
-        WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+        WHERE DATE(created_at) >= CURRENT_DATE - INTERVAL '6 days'
         GROUP BY DATE(created_at)
       ),
       daily_tokens AS (
         SELECT DATE(completed_at) as date,
                COALESCE(SUM(amount), 0) as revenue
         FROM service_tokens
-        WHERE completed_at >= CURRENT_DATE - INTERVAL '7 days'
+        WHERE DATE(completed_at) >= CURRENT_DATE - INTERVAL '6 days'
         AND status = 'completed'
         GROUP BY DATE(completed_at)
       ),
       all_dates AS (
         SELECT generate_series(
-          CURRENT_DATE - INTERVAL '7 days',
+          CURRENT_DATE - INTERVAL '6 days',
           CURRENT_DATE,
           INTERVAL '1 day'
         )::date as date

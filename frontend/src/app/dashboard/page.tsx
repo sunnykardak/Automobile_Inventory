@@ -154,7 +154,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
       shadowColor: 'rgba(139, 92, 246, 0.2)',
       bgTint: 'rgba(139, 92, 246, 0.06)',
-      subtitle: 'Jobs + Tokens',
+      subtitle: `${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
       href: '/dashboard/reports',
     },
     {
@@ -164,7 +164,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
       shadowColor: 'rgba(59, 130, 246, 0.2)',
       bgTint: 'rgba(59, 130, 246, 0.06)',
-      subtitle: 'Jobs + Tokens',
+      subtitle: `${new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}`,
       href: '/dashboard/reports',
     },
     {
@@ -403,19 +403,19 @@ export default function DashboardPage() {
               {/* Summary Stats */}
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
                 <div className="text-center">
-                  <p className="text-xs text-gray-500 mb-1">Total</p>
+                  <p className="text-xs text-gray-500 mb-1">7-Day Total</p>
                   <p className="text-lg font-bold text-gray-900">
                     ₹{data.revenueGraph.reduce((sum, d) => sum + parseFloat(d.revenue || 0), 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-gray-500 mb-1">Average</p>
+                  <p className="text-xs text-gray-500 mb-1">Daily Average</p>
                   <p className="text-lg font-bold text-gray-900">
                     ₹{Math.round(data.revenueGraph.reduce((sum, d) => sum + parseFloat(d.revenue || 0), 0) / data.revenueGraph.length).toLocaleString()}
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-gray-500 mb-1">Peak</p>
+                  <p className="text-xs text-gray-500 mb-1">Highest Day</p>
                   <p className="text-lg font-bold text-gray-900">
                     ₹{Math.max(...data.revenueGraph.map(d => parseFloat(d.revenue || 0))).toLocaleString()}
                   </p>
