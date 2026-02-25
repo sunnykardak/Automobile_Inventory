@@ -109,7 +109,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #00b4d8 0%, #0096c7 100%)',
       shadowColor: 'rgba(4, 201, 171, 0.2)',
       bgTint: 'rgba(4, 201, 171, 0.06)',
-      href: '/dashboard/jobs',
+      href: '/jobs',
     },
     {
       title: 'Service Tokens Today',
@@ -118,7 +118,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
       shadowColor: 'rgba(6, 182, 212, 0.2)',
       bgTint: 'rgba(6, 182, 212, 0.06)',
-      href: '/dashboard/tokens',
+      href: '/tokens',
     },
     {
       title: 'Pending Jobs',
@@ -127,7 +127,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
       shadowColor: 'rgba(245, 158, 11, 0.2)',
       bgTint: 'rgba(245, 158, 11, 0.06)',
-      href: '/dashboard/jobs?status=In Progress',
+      href: '/jobs?status=In Progress',
     },
     {
       title: 'Completed Today',
@@ -136,7 +136,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
       shadowColor: 'rgba(16, 185, 129, 0.2)',
       bgTint: 'rgba(16, 185, 129, 0.06)',
-      href: '/dashboard/jobs?status=Completed',
+      href: '/jobs?status=Completed',
     },
     {
       title: 'Tokens Completed',
@@ -145,7 +145,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
       shadowColor: 'rgba(20, 184, 166, 0.2)',
       bgTint: 'rgba(20, 184, 166, 0.06)',
-      href: '/dashboard/tokens?status=completed',
+      href: '/tokens?status=completed',
     },
     {
       title: "Today's Revenue",
@@ -155,7 +155,7 @@ export default function DashboardPage() {
       shadowColor: 'rgba(139, 92, 246, 0.2)',
       bgTint: 'rgba(139, 92, 246, 0.06)',
       subtitle: `${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
-      href: '/dashboard/reports',
+      href: '/reports',
     },
     {
       title: 'Monthly Revenue',
@@ -165,7 +165,7 @@ export default function DashboardPage() {
       shadowColor: 'rgba(59, 130, 246, 0.2)',
       bgTint: 'rgba(59, 130, 246, 0.06)',
       subtitle: `${new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}`,
-      href: '/dashboard/reports',
+      href: '/reports',
     },
     {
       title: 'Low Stock Alerts',
@@ -174,7 +174,7 @@ export default function DashboardPage() {
       gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
       shadowColor: 'rgba(239, 68, 68, 0.2)',
       bgTint: 'rgba(239, 68, 68, 0.06)',
-      href: '/dashboard/inventory?lowStock=true',
+      href: '/inventory?lowStock=true',
     },
   ];
 
@@ -182,28 +182,28 @@ export default function DashboardPage() {
     {
       label: 'New Job Card',
       icon: ClipboardList,
-      href: '/dashboard/jobs?create=true',
+      href: '/jobs?create=true',
       gradient: 'linear-gradient(135deg, #00b4d8 0%, #0096c7 100%)',
       shadowColor: 'rgba(4, 201, 171, 0.25)',
     },
     {
       label: 'View Inventory',
       icon: Package,
-      href: '/dashboard/inventory',
+      href: '/inventory',
       gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
       shadowColor: 'rgba(139, 92, 246, 0.25)',
     },
     {
       label: 'Active Jobs',
       icon: Wrench,
-      href: '/dashboard/jobs',
+      href: '/jobs',
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
       shadowColor: 'rgba(16, 185, 129, 0.25)',
     },
     {
       label: 'View Reports',
       icon: BarChart3,
-      href: '/dashboard/reports',
+      href: '/reports',
       gradient: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
       shadowColor: 'rgba(249, 115, 22, 0.25)',
     },
