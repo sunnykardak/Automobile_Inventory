@@ -9,8 +9,10 @@ import {
   Download,
   RefreshCw,
   XCircle,
-  Clock
+  Clock,
+  Settings
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
@@ -65,6 +67,7 @@ interface PurchaseSuggestion {
 }
 
 export default function InventoryAlertsPage() {
+  const router = useRouter();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [stats, setStats] = useState<AlertStats | null>(null);
   const [purchaseSuggestions, setPurchaseSuggestions] = useState<PurchaseSuggestion[]>([]);
@@ -201,13 +204,22 @@ export default function InventoryAlertsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Smart Inventory Alerts</h1>
           <p className="mt-1 text-gray-600">Monitor stock levels and get intelligent recommendations</p>
         </div>
-        <button
-          onClick={fetchData}
-          className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/inventory/alerts/rules')}
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Manage Rules
+          </button>
+          <button
+            onClick={fetchData}
+            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
