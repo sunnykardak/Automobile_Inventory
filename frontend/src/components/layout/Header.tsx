@@ -204,14 +204,14 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                 <div className="p-1.5">
                   <button
                     className="dropdown-item w-full rounded-lg"
-                    onClick={() => { router.push('/dashboard/account'); setShowProfileMenu(false); }}
+                    onClick={() => { router.push('/account'); setShowProfileMenu(false); }}
                   >
                     <User size={16} />
                     <span className="text-sm">My Profile</span>
                   </button>
                   <button
                     className="dropdown-item w-full rounded-lg"
-                    onClick={() => { router.push('/dashboard/account'); setShowProfileMenu(false); }}
+                    onClick={() => { router.push('/account'); setShowProfileMenu(false); }}
                   >
                     <Settings size={16} />
                     <span className="text-sm">Settings</span>

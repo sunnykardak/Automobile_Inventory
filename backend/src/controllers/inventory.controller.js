@@ -356,3 +356,243 @@ exports.searchByBarcode = async (req, res) => {
     });
   }
 };
+
+// @desc    Get all inventory alerts
+// @route   GET /api/v1/inventory/alerts
+// @access  Private
+exports.getAllAlerts = async (req, res) => {
+  try {
+    const { alertType, severity } = req.query;
+    
+    let queryText = 'SELECT * FROM vw_inventory_alerts WHERE 1=1';
+    const params = [];
+    let paramIndex = 1;
+    
+    if (alertType) {
+      queryText += ` AND alert_type = $${paramIndex}`;
+      params.push(alertType);
+      paramIndex++;
+    }
+    
+    if (severity) {
+      queryText += ` AND severity = $${paramIndex}`;
+      params.push(severity);
+      paramIndex++;
+    }
+    
+    queryText += ` ORDER BY 
+      CASE severity 
+        WHEN 'CRITICAL' THEN 1
+        WHEN 'HIGH' THEN 2
+        WHEN 'MEDIUM' THEN 3
+        WHEN 'LOW' THEN 4
+      END,
+      CASE alert_type 
+        WHEN 'OUT_OF_STOCK' THEN 1
+        WHEN 'LOW_STOCK' THEN 2
+        WHEN 'FAST_MOVING_LOW' THEN 3
+        WHEN 'DEAD_STOCK' THEN 4
+      END`;
+    
+    const result = await query(queryText, params);
+    
+    res.status(200).json({
+      success: true,
+      data: result.rows,
+      count: result.rows.length,
+    });
+  } catch (error) {
+    logger.error('Get all alerts error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get alerts',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get alert statistics
+// @route   GET /api/v1/inventory/alerts/stats
+// @access  Private
+exports.getAlertStats = async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM get_inventory_alert_stats()');
+    
+    res.status(200).json({
+      success: true,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    logger.error('Get alert stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get alert statistics',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get fast-moving items
+// @route   GET /api/v1/inventory/alerts/fast-moving
+// @access  Private
+exports.getFastMovingItems = async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT * FROM vw_fast_moving_items
+      ORDER BY total_quantity_sold_30days DESC
+    `);
+    
+    res.status(200).json({
+      success: true,
+      data: result.rows,
+      count: result.rows.length,
+    });
+  } catch (error) {
+    logger.error('Get fast-moving items error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get fast-moving items',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get dead stock items
+// @route   GET /api/v1/inventory/alerts/dead-stock
+// @access  Private
+exports.getDeadStock = async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT * FROM vw_dead_stock_items
+      ORDER BY days_since_last_sale DESC
+    `);
+    
+    res.status(200).json({
+      success: true,
+      data: result.rows,
+      count: result.rows.length,
+    });
+  } catch (error) {
+    logger.error('Get dead stock error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get dead stock items',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get purchase order suggestions
+// @route   GET /api/v1/inventory/alerts/purchase-suggestions
+// @access  Private
+exports.getPurchaseSuggestions = async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT * FROM vw_purchase_order_suggestions
+      ORDER BY 
+        CASE priority
+          WHEN 'URGENT - Out of Stock' THEN 1
+          WHEN 'HIGH - Below Minimum' THEN 2
+          WHEN 'MEDIUM - Fast Moving' THEN 3
+          ELSE 4
+        END,
+        estimated_cost DESC
+    `);
+    
+    res.status(200).json({
+      success: true,
+      data: result.rows,
+      count: result.rows.length,
+      totalEstimatedCost: result.rows.reduce((sum, item) => sum + parseFloat(item.estimated_cost || 0), 0).toFixed(2),
+    });
+  } catch (error) {
+    logger.error('Get purchase suggestions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get purchase suggestions',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get inventory movement analysis
+// @route   GET /api/v1/inventory/alerts/movement-analysis
+// @access  Private
+exports.getMovementAnalysis = async (req, res) => {
+  try {
+    const { minSales } = req.query;
+    
+    let queryText = 'SELECT * FROM vw_inventory_movement_analysis WHERE 1=1';
+    const params = [];
+    
+    if (minSales) {
+      queryText += ' AND qty_sold_30days >= $1';
+      params.push(minSales);
+    }
+    
+    queryText += ' ORDER BY qty_sold_30days DESC';
+    
+    const result = await query(queryText, params);
+    
+    res.status(200).json({
+      success: true,
+      data: result.rows,
+      count: result.rows.length,
+    });
+  } catch (error) {
+    logger.error('Get movement analysis error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get movement analysis',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Update minimum stock level
+// @route   PATCH /api/v1/inventory/:id/minimum-stock
+// @access  Private (Admin, Owner, Manager)
+exports.updateMinimumStock = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { minimum_stock_level } = req.body;
+    
+    if (!minimum_stock_level || minimum_stock_level < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid minimum stock level is required',
+      });
+    }
+    
+    const result = await query(
+      `UPDATE inventory 
+       SET minimum_stock_level = $1, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $2 AND is_active = true
+       RETURNING *`,
+      [minimum_stock_level, id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Inventory item not found',
+      });
+    }
+    
+    logger.info(`Minimum stock level updated for inventory ${id} to ${minimum_stock_level}`);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Minimum stock level updated successfully',
+      data: result.rows[0],
+    });
+  } catch (error) {
+    logger.error('Update minimum stock error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update minimum stock level',
+      error: error.message,
+    });
+  }
+};
+

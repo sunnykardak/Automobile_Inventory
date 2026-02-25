@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard, ClipboardList, Package, BarChart3,
   User, HelpCircle, X, LogOut, Ticket, Users, Wrench,
-  ChevronRight, UserCog, Trophy,
+  ChevronRight, UserCog, Trophy, AlertTriangle,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -16,15 +16,16 @@ interface SidebarProps {
 
 const menuItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Job Cards', href: '/dashboard/jobs', icon: ClipboardList },
-  { name: 'Service Tokens', href: '/dashboard/tokens', icon: Ticket },
-  { name: 'Customers', href: '/dashboard/customers', icon: Users },
-  { name: 'Employees', href: '/dashboard/employees', icon: UserCog },
-  { name: 'Performance', href: '/dashboard/performance', icon: Trophy },
-  { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
-  { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
-  { name: 'My Account', href: '/dashboard/account', icon: User },
-  { name: 'Help & Support', href: '/dashboard/help', icon: HelpCircle },
+  { name: 'Job Cards', href: '/jobs', icon: ClipboardList },
+  { name: 'Service Tokens', href: '/tokens', icon: Ticket },
+  { name: 'Customers', href: '/customers', icon: Users },
+  { name: 'Employees', href: '/employees', icon: UserCog },
+  { name: 'Performance', href: '/performance', icon: Trophy },
+  { name: 'Inventory', href: '/inventory', icon: Package },
+  { name: 'Smart Alerts', href: '/inventory/alerts', icon: AlertTriangle },
+  { name: 'Reports', href: '/reports', icon: BarChart3 },
+  { name: 'My Account', href: '/account', icon: User },
+  { name: 'Help & Support', href: '/help', icon: HelpCircle },
 ];
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
@@ -93,8 +94,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           </p>
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href ||
-              (item.href !== '/dashboard' && pathname.startsWith(item.href));
+            // Check for exact match first across all menu items
+            const hasExactMatch = menuItems.some(mi => pathname === mi.href);
+            // If there's an exact match somewhere, only highlight exact matches
+            // Otherwise, allow prefix matching (but not for dashboard root)
+            const isActive = hasExactMatch 
+              ? pathname === item.href
+              : (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/')));
 
             return (
               <Link
