@@ -31,6 +31,7 @@ const customerRoutes = require('./routes/customer.routes');
 const whatsappRoutes = require('./routes/whatsapp.routes');
 const taxRoutes = require('./routes/tax.routes');
 const alertRulesRoutes = require('./routes/alertRules.routes');
+const paymentRoutes = require('./routes/payment.routes');
 
 const app = express();
 
@@ -107,6 +108,7 @@ app.use(`${API_PREFIX}/service-tokens`, tokenRoutes);
 app.use(`${API_PREFIX}/whatsapp`, whatsappRoutes);
 app.use(`${API_PREFIX}/tax`, taxRoutes);
 app.use(`${API_PREFIX}/alert-rules`, alertRulesRoutes);
+app.use(`${API_PREFIX}/payments`, paymentRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
